@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Kerygma</title>
+<meta name="theme-color" content="#123E7C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kerygma">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card-wrap">
+    <div class="auth-brand">
+      <div class="auth-logo">
+        <span class="auth-logo-k">K</span>
+      </div>
+      <div class="auth-brand-title">Kerygma</div>
+      <div class="auth-brand-tagline">organize, estude, proclame.</div>
+    </div>
+
+    <div class="auth-form-card">
+      <div class="auth-form-title" id="authFormTitle">Acesse seu painel</div>
+      <div class="auth-form-desc" id="authFormDesc">Seus sermões estão te esperando.</div>
+
+      <div class="auth-input" id="auth-name-field" style="display:none">
+        <span class="auth-input-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+        <input type="text" id="auth-name" placeholder="Nome completo" autocomplete="name">
+      </div>
+      <div class="auth-input">
+        <span class="auth-input-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+        <input type="email" id="auth-email" placeholder="E-mail" autocomplete="email">
+      </div>
+      <div class="auth-input">
+        <span class="auth-input-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>
+        <input type="password" id="auth-password" placeholder="Sua senha" autocomplete="current-password">
+      </div>
+      <div class="auth-input" id="auth-confirm-field" style="display:none">
+        <span class="auth-input-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>
+        <input type="password" id="auth-password2" placeholder="Confirmar senha" autocomplete="new-password">
+      </div>
+
+      <div class="auth-forgot" id="authForgotRow"><button type="button" class="link-btn" onclick="toast('Em breve')">Esqueci minha senha</button></div>
+
+      <div class="auth-error" id="authError"></div>
+
+      <button class="btn btn-primary btn-block auth-submit" id="authSubmitBtn" onclick="submitAuth()">→ Entrar no App</button>
+      <button class="btn btn-ghost btn-block" id="authToggleBtn" onclick="toggleAuthMode()">Novo por aqui? Criar conta agora</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell" style="display:none">
+  <!-- SIDEBAR (desktop) -->
+  <aside class="sidebar" id="sidebarEl">
+    <button class="sidebar-toggle" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Recolher menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <div class="logo">
+      <div class="logo-mark logo-mark-k">K</div>
+      <div class="logo-text">Kerygma</div>
+      <button class="icon-btn sidebar-bell" onclick="showView('notifications')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></svg>
+        <span class="notif-badge" id="notifBadgeDesktop"></span>
+      </button>
+    </div>
+    <button class="sidebar-profile" onclick="showView('settings')" title="Ver perfil">
+      <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+      <div class="sidebar-profile-info">
+        <div class="sidebar-profile-name" id="sidebarProfileName">—</div>
+        <div class="sidebar-profile-link">Ver perfil</div>
+      </div>
+    </button>
+    <div class="sidebar-divider"></div>
+    <nav class="side-nav" id="sideNav"></nav>
+    <button class="btn btn-primary btn-block sidebar-create-btn" style="margin-top:20px" onclick="openCreateSheet()" title="Criar novo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="nav-label"> Criar novo</span></button>
+    <div class="sidebar-bottom">
+      <button class="sidebar-logout" onclick="logout()" title="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> <span class="nav-label">Sair</span></button>
+      <div class="sidebar-footer">Kerygma — organize, estude, proclame.</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo-mark logo-mark-k">K</div>
+        <div class="brand-text">Kerygma</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" onclick="showView('notifications')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></svg>
+          <span class="notif-badge" id="notifBadgeMobile"></span>
+        </button>
+        <button class="icon-btn" onclick="showView('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <section class="view" id="view-home">
+      <div class="home-greeting" id="homeGreeting">Olá</div>
+      <div class="hero-card">
+        <div class="hero-eyebrow">Palavra para hoje</div>
+        <div class="hero-verse">"Prontos sempre para responder a todo aquele que vos pedir a razão da esperança que há em vós."</div>
+        <div class="hero-ref">1 Pedro 3:15</div>
+      </div>
+      <div class="home-widgets">
+        <div class="streak-card" id="streakCard" onclick="startNewItem('devotional')">
+          <div class="streak-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></div>
+          <div><div class="streak-num" id="streakNum">0</div><div class="streak-label" id="streakLabel">Comece hoje seu devocional</div></div>
+        </div>
+        <button class="prayer-card" onclick="showView('prayers')">
+          <div class="prayer-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6.5 5.5 5.5 0 0121.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+          <div><div class="streak-num" id="prayerCount">0</div><div class="streak-label">Pedidos de oração</div></div>
+        </button>
+      </div>
+      <button class="draft-card" id="draftsCard" onclick="openLibraryDraftsTab()" style="display:none">
+        <div class="prayer-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.12l-1.88-1.88a1.5 1.5 0 00-2.12 0L4 15v5z"/><path d="M13.5 6.5l4 4"/></svg></div>
+        <div><b id="draftsCount">0</b> rascunho(s) não salvo(s) — toque para continuar</div>
+      </button>
+      <div class="stats-row" id="statsRow"></div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+        <input type="text" id="homeSearch" placeholder="Buscar sermões e estudos..." oninput="renderHome()">
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-bottom:20px" onclick="openCreateSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Criar novo</button>
+      <div class="section-title"><h2>Recentes</h2><button class="link" onclick="showView('folders')">ver pastas</button></div>
+      <div class="item-list" id="recentList"></div>
+    </section>
+
+    <!-- FOLDERS -->
+    <section class="view" id="view-folders">
+      <div class="section-title" style="margin-top:0"><h2>Minhas pastas</h2></div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+        <input type="text" id="foldersSearch" placeholder="Buscar pastas..." oninput="renderFolders()">
+      </div>
+      <div class="card-grid" id="foldersGrid"></div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="view" id="view-library">
+      <div class="section-title" style="margin-top:0"><h2>Biblioteca</h2></div>
+      <div class="form-tabs" id="libraryTabs">
+        <button type="button" class="form-tab active" data-tab="published" onclick="setLibraryTab('published')">Publicados</button>
+        <button type="button" class="form-tab" data-tab="drafts" onclick="setLibraryTab('drafts')">Rascunhos</button>
+      </div>
+      <div id="library-published-panel">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="librarySearch" placeholder="Buscar em todo o conteúdo..." oninput="renderLibrary()">
+        </div>
+        <div class="filter-chips">
+          <button class="filter-chip active" data-type="all" onclick="setLibraryFilter('all')">Todos</button>
+          <button class="filter-chip" data-type="sermon" onclick="setLibraryFilter('sermon')">Sermão</button>
+          <button class="filter-chip" data-type="study" onclick="setLibraryFilter('study')">Estudo</button>
+          <button class="filter-chip" data-type="devotional" onclick="setLibraryFilter('devotional')">Devocional</button>
+          <button class="filter-chip" data-type="summary" onclick="setLibraryFilter('summary')">Resumo</button>
+        </div>
+        <div id="libraryList"></div>
+      </div>
+      <div id="library-drafts-panel" style="display:none">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="libraryDraftsSearch" placeholder="Buscar rascunhos..." oninput="renderDrafts()">
+        </div>
+        <div id="draftsList"></div>
+      </div>
+    </section>
+
+    <!-- FOLDER DETAIL -->
+    <section class="view" id="view-folder-detail">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('folders')">←</button>
+        <div class="back-title" id="folderDetailTitle">Pasta</div>
+      </div>
+      <div class="detail-actions" style="margin-bottom:16px">
+        <button class="btn btn-primary btn-sm" onclick="openCreateSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Criar novo</button>
+        <button class="btn btn-secondary btn-sm" onclick="renameFolder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.12l-1.88-1.88a1.5 1.5 0 00-2.12 0L4 15v5z"/><path d="M13.5 6.5l4 4"/></svg> Renomear</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFolder()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 12a1 1 0 001 1h6a1 1 0 001-1l1-12"/></svg> Excluir pasta</button>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+        <input type="text" id="folderItemsSearch" placeholder="Buscar nesta pasta..." oninput="renderFolderItemsList()">
+      </div>
+      <div class="item-list" id="folderItemsList"></div>
+    </section>
+
+    <!-- ITEM FORM -->
+    <section class="view" id="view-item-form">
+      <div class="back-row">
+        <button class="icon-btn" onclick="cancelForm()">←</button>
+        <div class="back-title" id="formTitle">Novo</div>
+      </div>
+      <div class="form-type-tag" id="formTypeTag" style="display:none"></div>
+      <div class="form-card">
+        <div class="field">
+          <label>Título</label>
+          <input type="text" id="f-title" placeholder="Ex: A fidelidade de Deus">
+        </div>
+        <div class="field">
+          <label>Pasta</label>
+          <div class="custom-select" id="f-folder-select">
+            <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('f-folder-select')">
+              <span id="f-folder-label">Sem pasta</span>
+              <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="custom-select-panel" id="f-folder-panel"></div>
+          </div>
+          <input type="hidden" id="f-folder" value="">
+        </div>
+        <div id="f-dynamic"></div>
+        <button class="btn btn-primary btn-block" onclick="saveItemForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M8 4v5h7V4M8 14h8v6H8z"/></svg> Salvar</button>
+      </div>
+    </section>
+
+    <!-- ITEM DETAIL -->
+    <section class="view" id="view-item-detail">
+      <div class="back-row">
+        <button class="icon-btn" onclick="backFromDetail()">←</button>
+        <div class="back-title">Detalhes</div>
+      </div>
+      <div id="itemDetailContent"></div>
+    </section>
+
+    <!-- MINDMAPS LIST -->
+    <section class="view" id="view-mindmaps">
+      <div class="section-title" style="margin-top:0">
+        <h2>Mapas mentais</h2>
+        <button class="link" onclick="createBlankMindMap()">+ novo</button>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+        <input type="text" id="mindmapsSearch" placeholder="Buscar mapas mentais..." oninput="renderMindmapsList()">
+      </div>
+      <div id="mindmapsList"></div>
+    </section>
+
+    <!-- MINDMAP EDITOR -->
+    <section class="view" id="view-mindmap-editor">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('mindmaps')">←</button>
+        <div class="back-title" id="mapEditorTitle">Mapa mental</div>
+        <button class="icon-btn" style="margin-left:auto" onclick="openRenameMap()" title="Renomear mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.12l-1.88-1.88a1.5 1.5 0 00-2.12 0L4 15v5z"/><path d="M13.5 6.5l4 4"/></svg></button>
+      </div>
+      <div class="map-toolbar">
+        <button class="btn btn-secondary btn-sm" onclick="reorganizeMap()">↻ Reorganizar</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportMapAsPDF()" id="exportMapBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 18v2a1 1 0 001 1h14a1 1 0 001-1v-2"/></svg> Exportar PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="deleteCurrentMap()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 12a1 1 0 001 1h6a1 1 0 001-1l1-12"/></svg> Excluir mapa</button>
+        <div class="map-zoom-controls">
+          <button class="map-zoom-btn" onclick="zoomOut()" title="Diminuir zoom">−</button>
+          <span class="map-zoom-label" id="zoomLabel" onclick="zoomReset()" title="Restaurar zoom">100%</span>
+          <button class="map-zoom-btn" onclick="zoomIn()" title="Aumentar zoom">+</button>
+        </div>
+      </div>
+      <div class="map-wrap" id="mapWrap">
+        <div class="map-canvas" id="mapCanvas"></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;">Toque em um nó para selecioná-lo. Arraste um nó para reposicioná-lo, ou arraste um espaço vazio para navegar pelo mapa. Use os botões acima do nó para editar, colorir, adicionar um ramo ou excluir.</p>
+    </section>
+
+    <!-- SETTINGS / PERFIL -->
+    <section class="view" id="view-settings">
+      <div class="section-title" style="margin-top:0"><h2>Perfil</h2></div>
+      <div class="profile-card">
+        <button type="button" class="profile-avatar-btn" onclick="document.getElementById('avatarFileInput').click()" title="Trocar foto">
+          <div class="profile-avatar" id="profileAvatarBig"></div>
+          <div class="profile-avatar-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 012-2h1.5l1-1.5h7l1 1.5H18a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+        </button>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarFileChange(event)">
+        <div class="profile-name" id="accountName">—</div>
+        <div class="profile-email" id="accountEmail">—</div>
+
+        <div class="profile-edit-form" id="profileEditForm" style="display:none">
+          <div class="field"><label>Nome completo</label><input type="text" id="edit-name" placeholder="Seu nome"></div>
+          <div class="field"><label>E-mail</label><input type="email" id="edit-email" placeholder="voce@email.com"></div>
+          <div class="field"><label>Celular</label><input type="tel" id="edit-phone" placeholder="(11) 91234-5678"></div>
+          <div class="field"><label>Data de nascimento</label><input type="date" id="edit-birthdate"></div>
+          <div class="field-row">
+            <div class="field"><label>Cidade</label><input type="text" id="edit-city" placeholder="Sua cidade"></div>
+            <div class="field"><label>Estado</label><input type="text" id="edit-state" placeholder="UF"></div>
+          </div>
+          <div class="field"><label>Igreja na qual congrega</label><input type="text" id="edit-church" placeholder="Nome da igreja"></div>
+          <div class="field field-checkbox">
+            <label class="checkbox-label"><input type="checkbox" id="edit-has-role" onchange="toggleRoleField()"> Exerço um cargo na igreja</label>
+          </div>
+          <div class="field" id="edit-role-field" style="display:none"><label>Qual cargo?</label><input type="text" id="edit-role" placeholder="Ex: Pastor, Diácono, Líder de célula..."></div>
+          <div class="profile-edit-actions">
+            <button class="btn btn-secondary btn-sm" onclick="toggleEditProfile(false)">Cancelar</button>
+            <button class="btn btn-primary btn-sm" id="saveProfileBtn" onclick="saveProfile()">Salvar</button>
+          </div>
+        </div>
+
+        <div class="profile-actions" id="profileActionsRow">
+          <button class="btn btn-secondary btn-sm" onclick="toggleEditProfile(true)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a1.5 1.5 0 000-2.12l-1.88-1.88a1.5 1.5 0 00-2.12 0L4 15v5z"/><path d="M13.5 6.5l4 4"/></svg> Editar perfil</button>
+          <button class="btn btn-ghost btn-sm" onclick="logout()">Sair da conta</button>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V4H6.5A2.5 2.5 0 004 6.5v13z"/></svg> Guia rápido</h3>
+        <p>Um resumo de cada estilo de sermão, estudo, devocional e resumo disponível no app.</p>
+        <button class="btn btn-secondary btn-sm" onclick="showView('guide')">Ver guia</button>
+      </div>
+      <div class="settings-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 18h6"/></svg> Adicionar à tela inicial</h3>
+        <p>Instale o Kerygma no seu celular ou computador para abrir como um app, em tela cheia.</p>
+        <button class="btn btn-primary btn-sm" onclick="openInstallSheet()">Adicionar à tela inicial</button>
+      </div>
+      <div class="settings-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0l1 12a1 1 0 001 1h6a1 1 0 001-1l1-12"/></svg> Apagar tudo</h3>
+        <p>Remove todas as pastas, sermões, estudos e mapas mentais da sua conta.</p>
+        <button class="btn btn-danger btn-sm" onclick="wipeAll()">Apagar todos os dados</button>
+      </div>
+      <div class="settings-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg> Sobre o Kerygma</h3>
+        <p>Kerygma (do grego, "proclamação") é o seu espaço pessoal para preparar sermões e estudos bíblicos e organizá-los por tema.</p>
+      </div>
+    </section>
+
+    <!-- NOTIFICATIONS -->
+    <section class="view" id="view-notifications">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('home')">←</button>
+        <div class="back-title">Notificações</div>
+      </div>
+      <div class="detail-actions" style="margin-bottom:16px">
+        <button class="btn btn-secondary btn-sm" onclick="markAllNotifsRead()">Marcar todas como lidas</button>
+        <button class="btn btn-danger btn-sm" onclick="clearNotifications()">Limpar tudo</button>
+      </div>
+      <div id="notificationsList"></div>
+    </section>
+
+    <!-- MORE -->
+    <section class="view" id="view-more">
+      <div class="section-title" style="margin-top:0"><h2>Mais</h2></div>
+      <div class="more-list">
+        <button class="more-item" onclick="showView('mindmaps')">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7.3L11 16M16 7.3L13 16M8.5 6h7"/></svg></div>
+          <div class="more-item-label">Mapas mentais</div>
+          <div class="chev">›</div>
+        </button>
+        <button class="more-item" onclick="showView('guide')">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-2 5-5 2 2-5 5-2z"/></svg></div>
+          <div class="more-item-label">Guia rápido</div>
+          <div class="chev">›</div>
+        </button>
+        <button class="more-item" onclick="showView('prayers')">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6.5 5.5 5.5 0 0121.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+          <div class="more-item-label">Pedidos de oração</div>
+          <div class="chev">›</div>
+        </button>
+        <button class="more-item" onclick="showView('notifications')" style="position:relative">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></svg></div>
+          <div class="more-item-label">Notificações</div>
+          <span class="notif-badge" id="notifBadgeMore"></span>
+          <div class="chev">›</div>
+        </button>
+        <button class="more-item" onclick="showView('settings')">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+          <div class="more-item-label">Perfil</div>
+          <div class="chev">›</div>
+        </button>
+      </div>
+      <button class="more-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Sair da conta</button>
+    </section>
+
+    <!-- DRAFTS -->
+    <section class="view" id="view-drafts">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('home')">←</button>
+        <div class="back-title">Rascunhos</div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Sempre que você sai de uma criação sem salvar, ela fica guardada aqui automaticamente.</p>
+      <div id="draftsList"></div>
+    </section>
+
+    <!-- GUIDE -->
+    <section class="view" id="view-guide">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('home')">←</button>
+        <div class="back-title">Guia rápido</div>
+      </div>
+      <p class="guide-intro">Um resumo de cada estilo disponível no Kerygma, para te ajudar a escolher o formato certo na hora de preparar algo.</p>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag tematico">Temático</span></div>
+        <p>Parte de <b>um tema ou necessidade espiritual</b> (não de um único texto) e reúne vários versículos que sustentam essa ideia. É o formato mais flexível — ótimo para discipulado, série de pregações e vida cristã prática.</p>
+        <p class="guide-tip">Dica: defina o tema com clareza antes de escolher os textos de apoio, e organize os pontos numa ordem lógica que sirva ao tema central.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag textual">Textual</span></div>
+        <p>Escolhe <b>um versículo ou trecho curto</b> (geralmente 1 a 3 versículos) e extrai os pontos de dentro do próprio texto, seguindo a ordem natural das ideias. Direto e muito aplicável — ótimo para mensagens curtas e células.</p>
+        <p class="guide-tip">Dica: mantenha a estrutura da mensagem fiel à sequência do próprio texto, sem forçar pontos que não estão ali.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag expositivo">Expositivo</span></div>
+        <p>Percorre <b>uma passagem mais longa</b> (parágrafo ou capítulo), explicando verso a verso com fidelidade ao contexto histórico e literário original. O mais exigente, mas o que mais conecta a igreja à mensagem genuína do texto.</p>
+        <p class="guide-tip">Dica: capriche no contexto histórico/literário — é o que sustenta a fidelidade da exposição.</p>
+      </div>
+
+      <div class="guide-compare">
+        <div class="guide-compare-row guide-compare-head">
+          <div></div><div>Temático</div><div>Textual</div><div>Expositivo</div>
+        </div>
+        <div class="guide-compare-row"><div>Ponto de partida</div><div>Um tema</div><div>Um versículo-chave</div><div>Um trecho inteiro</div></div>
+        <div class="guide-compare-row"><div>Base textual</div><div>Vários textos de apoio</div><div>Um texto pequeno e fixo</div><div>Um trecho maior, sequencial</div></div>
+        <div class="guide-compare-row"><div>Objetivo</div><div>Ensinar um assunto</div><div>Revelar verdades do texto</div><div>Explicar fielmente o contexto</div></div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag study">Estudo (OIA)</span></div>
+        <p>Método <b>Observação → Interpretação → Aplicação</b>: primeiro observa o que o texto diz, depois interpreta o que significa, e por fim aplica à vida. Ótimo para se aprofundar sozinho ou preparar um estudo em grupo.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag devotional">Devocional (SOAP)</span></div>
+        <p>Método <b>Escritura → Observação → Aplicação → Oração</b>. Mais curto e pessoal — pensado para o dia a dia, não para grandes análises teológicas.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="tag summary">Resumo</span></div>
+        <p>O mais objetivo de todos — condensa as ideias principais de um livro, estudo ou pregação, com espaço para guardar frases e pontos de destaque.</p>
+      </div>
+    </section>
+
+    <!-- PRAYERS -->
+    <section class="view" id="view-prayers">
+      <div class="back-row">
+        <button class="icon-btn" onclick="showView('home')">←</button>
+        <div class="back-title">Pedidos de Oração</div>
+      </div>
+      <div class="prayer-add-row">
+        <input type="text" id="newPrayerText" placeholder="Novo pedido de oração...">
+        <button class="btn btn-primary btn-sm" onclick="addPrayer()">Adicionar</button>
+      </div>
+      <div class="form-tabs" style="margin-top:16px;margin-bottom:16px;">
+        <button type="button" class="form-tab active" data-tab="pending" onclick="switchPrayerTab('pending')">Pendentes</button>
+        <button type="button" class="form-tab" data-tab="answered" onclick="switchPrayerTab('answered')">Respondidas</button>
+      </div>
+      <div id="prayersList"></div>
+    </section>
+  </main>
+
+</div>
+
+<!-- PRESENTATION MODE -->
+<div id="presentationScreen" class="presentation-screen" style="display:none">
+  <button class="pres-close" onclick="closePresentation()">✕</button>
+  <div class="pres-progress" id="presProgress">1 / 1</div>
+  <div class="pres-slide" id="presSlide"></div>
+  <button class="pres-nav pres-nav-prev" onclick="presPrev()" id="presPrevBtn">‹</button>
+  <button class="pres-nav pres-nav-next" onclick="presNext()" id="presNextBtn">›</button>
+</div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav" style="display:none"></nav>
+
+<!-- CREATE SHEET -->
+<div class="overlay" id="createOverlay" onclick="if(event.target===this)closeSheet('createOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Criar novo</div>
+    <div class="sheet-option" onclick="startSermonChoice()">
+      <div class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 012-2h6v18H6a2 2 0 01-2-2V5z"/><path d="M20 5a2 2 0 00-2-2h-6v18h6a2 2 0 002-2V5z"/></svg></div>
+      <div class="s-text"><b>Sermão</b><span>Temático, textual ou expositivo</span></div>
+    </div>
+    <div class="sheet-option" onclick="startNewItem('study')">
+      <div class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M8 12h8M8 16h5"/></svg></div>
+      <div class="s-text"><b>Estudo</b><span>Método OIA — Observação, Interpretação, Aplicação</span></div>
+    </div>
+    <div class="sheet-option" onclick="startNewItem('devotional')">
+      <div class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6.5 5.5 5.5 0 0121.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+      <div class="s-text"><b>Devocional</b><span>Método SOAP, ideal para o dia a dia</span></div>
+    </div>
+    <div class="sheet-option" onclick="startNewItem('summary')">
+      <div class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>
+      <div class="s-text"><b>Resumo</b><span>Objetivo — de um livro, estudo ou pregação</span></div>
+    </div>
+    <div class="sheet-option" onclick="openNewFolder()">
+      <div class="s-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></div>
+      <div class="s-text"><b>Pasta</b><span>Organize por tema</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERMON TYPE SHEET -->
+<div class="overlay" id="sermonTypeOverlay" onclick="if(event.target===this)closeSheet('sermonTypeOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title-row">
+      <button type="button" class="sheet-back-btn" onclick="backToCreateSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="sheet-title" style="margin:0">Tipo de sermão</div>
+      <button type="button" class="sheet-info-btn" onclick="closeSheet('sermonTypeOverlay');showView('guide')" title="O que é cada tipo?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg></button>
+    </div>
+    <div class="choice-grid">
+      <div class="choice-card" onclick="startNewItem('sermon','tematico')">
+        <div class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/></svg></div>
+        <div><div class="c-title">Temático</div><div class="c-desc">Desenvolvido a partir de um tema, com apoio em vários textos.</div></div>
+      </div>
+      <div class="choice-card" onclick="startNewItem('sermon','textual')">
+        <div class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></svg></div>
+        <div><div class="c-title">Textual</div><div class="c-desc">A estrutura do sermão segue a divisão natural de um texto.</div></div>
+      </div>
+      <div class="choice-card" onclick="startNewItem('sermon','expositivo')">
+        <div class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg></div>
+        <div><div class="c-title">Expositivo</div><div class="c-desc">Exposição detalhada de uma passagem, versículo a versículo.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW FOLDER SHEET -->
+<div class="overlay" id="folderOverlay" onclick="if(event.target===this)closeSheet('folderOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="folderSheetTitle">Nova pasta</div>
+    <div class="field">
+      <label>Nome da pasta</label>
+      <input type="text" id="newFolderName" placeholder="Ex: Vida Cristã">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="confirmFolder()">Salvar</button>
+  </div>
+</div>
+
+<!-- UNSAVED CHANGES SHEET -->
+<div class="overlay" id="unsavedOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Alterações não salvas</div>
+    <p style="font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:18px;">Você fez alterações que ainda não foram salvas. O que deseja fazer?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-primary btn-block" onclick="unsavedSave()">Salvar alterações</button>
+      <button class="btn btn-danger btn-block" onclick="unsavedDiscard()">Descartar alterações</button>
+      <button class="btn btn-secondary btn-block" onclick="closeSheet('unsavedOverlay')">Continuar editando</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM SHEET -->
+<div class="overlay" id="confirmOverlay" onclick="if(event.target===this)closeSheet('confirmOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="confirmTitle">Confirmar</div>
+    <p id="confirmMsg" style="font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:16px;"></p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-secondary btn-block" onclick="closeSheet('confirmOverlay')">Cancelar</button>
+      <button class="btn btn-danger btn-block" id="confirmActionBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME MAP SHEET -->
+<div class="overlay" id="renameMapOverlay" onclick="if(event.target===this)closeSheet('renameMapOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Renomear mapa</div>
+    <div class="field"><label>Nome do mapa</label><input type="text" id="renameMapInput" placeholder="Nome do mapa mental"></div>
+    <button class="btn btn-primary btn-block" onclick="confirmRenameMap()">Salvar</button>
+  </div>
+</div>
+
+<!-- INSTALL APP SHEET -->
+<div class="overlay" id="installOverlay" onclick="if(event.target===this)closeSheet('installOverlay')">
+  <div class="sheet" style="text-align:center">
+    <div class="sheet-handle"></div>
+    <div class="install-icon"><span class="auth-logo-k">K</span></div>
+    <div class="sheet-title" style="text-align:center">Instalar o Kerygma</div>
+    <p id="installBody" style="font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:18px;text-align:left;">Adicione o Kerygma à tela inicial do seu aparelho para abrir como um app, em tela cheia, sem precisar do navegador.</p>
+    <button class="btn btn-primary btn-block" id="installActionBtn" onclick="triggerInstall()">Instalar agora</button>
+    <button class="btn btn-ghost btn-block" onclick="closeSheet('installOverlay')">Agora não</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
