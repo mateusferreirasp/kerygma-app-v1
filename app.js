@@ -1958,15 +1958,23 @@ function confirmBiblePicker(){
 const BIBLE_API = 'https://www.abibliadigital.com.br/api';
 async function bibleFetchJSON(path){
   const url = BIBLE_API + path;
+  let directIsServerError = false;
   try{
     const res = await fetch(url);
-    if(!res.ok){ const err = new Error('HTTP '+res.status); err.isServerError = res.status>=500; throw err; }
+    if(!res.ok){ directIsServerError = res.status>=500; throw new Error('HTTP '+res.status); }
     return await res.json();
   }catch(directErr){
     console.warn('Chamada direta à API da Bíblia falhou, tentando via proxy:', directErr && directErr.message);
-    const res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-    if(!res2.ok){ const err = new Error('HTTP '+res2.status+' (via proxy)'); err.isServerError = directErr.isServerError || res2.status>=500; throw err; }
-    return await res2.json();
+    try{
+      const res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+      if(!res2.ok) throw new Error('HTTP '+res2.status+' (via proxy)');
+      return await res2.json();
+    }catch(proxyErr){
+      console.warn('Chamada via proxy também falhou:', proxyErr && proxyErr.message);
+      const finalErr = new Error('Falha ao buscar dados da Bíblia (direto e via proxy)');
+      finalErr.isServerError = directIsServerError;
+      throw finalErr;
+    }
   }
 }
 function bibleErrorMessage(e){
