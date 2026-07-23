@@ -784,3 +784,16 @@ button{font-family:inherit;}
   flex:1;min-height:0!important;height:auto!important;overflow-y:auto!important;
   font-size:16.5px;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));
 }
+
+/* ---------- UPDATE BANNER (nova versão disponível) ---------- */
+.update-banner{
+  position:fixed;left:14px;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:500;
+  background:var(--navy);color:white;border-radius:16px;box-shadow:var(--shadow-lg);
+  padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:12.5px;animation:fadein .25s ease both;
+}
+.update-banner button{
+  flex-shrink:0;background:white;color:var(--blue-700);border:none;border-radius:999px;
+  padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;
+}
+@media (min-width:900px){ .update-banner{left:auto;right:24px;bottom:24px;max-width:340px;} }
