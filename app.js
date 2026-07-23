@@ -512,40 +512,40 @@ const NOTES_FIELDS = [
    Isso é só a ESTRUTURA da Bíblia (nomes dos livros e quantos capítulos cada um tem),
    não o texto — por isso pode ficar embutido no app sem problema de direitos autorais. */
 const BIBLE_BOOKS = [
-  {name:'Gênesis', chapters:50, testament:'VT'}, {name:'Êxodo', chapters:40, testament:'VT'},
-  {name:'Levítico', chapters:27, testament:'VT'}, {name:'Números', chapters:36, testament:'VT'},
-  {name:'Deuteronômio', chapters:34, testament:'VT'}, {name:'Josué', chapters:24, testament:'VT'},
-  {name:'Juízes', chapters:21, testament:'VT'}, {name:'Rute', chapters:4, testament:'VT'},
-  {name:'1 Samuel', chapters:31, testament:'VT'}, {name:'2 Samuel', chapters:24, testament:'VT'},
-  {name:'1 Reis', chapters:22, testament:'VT'}, {name:'2 Reis', chapters:25, testament:'VT'},
-  {name:'1 Crônicas', chapters:29, testament:'VT'}, {name:'2 Crônicas', chapters:36, testament:'VT'},
-  {name:'Esdras', chapters:10, testament:'VT'}, {name:'Neemias', chapters:13, testament:'VT'},
-  {name:'Ester', chapters:10, testament:'VT'}, {name:'Jó', chapters:42, testament:'VT'},
-  {name:'Salmos', chapters:150, testament:'VT'}, {name:'Provérbios', chapters:31, testament:'VT'},
-  {name:'Eclesiastes', chapters:12, testament:'VT'}, {name:'Cânticos', chapters:8, testament:'VT'},
-  {name:'Isaías', chapters:66, testament:'VT'}, {name:'Jeremias', chapters:52, testament:'VT'},
-  {name:'Lamentações', chapters:5, testament:'VT'}, {name:'Ezequiel', chapters:48, testament:'VT'},
-  {name:'Daniel', chapters:12, testament:'VT'}, {name:'Oséias', chapters:14, testament:'VT'},
-  {name:'Joel', chapters:3, testament:'VT'}, {name:'Amós', chapters:9, testament:'VT'},
-  {name:'Obadias', chapters:1, testament:'VT'}, {name:'Jonas', chapters:4, testament:'VT'},
-  {name:'Miquéias', chapters:7, testament:'VT'}, {name:'Naum', chapters:3, testament:'VT'},
-  {name:'Habacuque', chapters:3, testament:'VT'}, {name:'Sofonias', chapters:3, testament:'VT'},
-  {name:'Ageu', chapters:2, testament:'VT'}, {name:'Zacarias', chapters:14, testament:'VT'},
-  {name:'Malaquias', chapters:4, testament:'VT'},
-  {name:'Mateus', chapters:28, testament:'NT'}, {name:'Marcos', chapters:16, testament:'NT'},
-  {name:'Lucas', chapters:24, testament:'NT'}, {name:'João', chapters:21, testament:'NT'},
-  {name:'Atos', chapters:28, testament:'NT'}, {name:'Romanos', chapters:16, testament:'NT'},
-  {name:'1 Coríntios', chapters:16, testament:'NT'}, {name:'2 Coríntios', chapters:13, testament:'NT'},
-  {name:'Gálatas', chapters:6, testament:'NT'}, {name:'Efésios', chapters:6, testament:'NT'},
-  {name:'Filipenses', chapters:4, testament:'NT'}, {name:'Colossenses', chapters:4, testament:'NT'},
-  {name:'1 Tessalonicenses', chapters:5, testament:'NT'}, {name:'2 Tessalonicenses', chapters:3, testament:'NT'},
-  {name:'1 Timóteo', chapters:6, testament:'NT'}, {name:'2 Timóteo', chapters:4, testament:'NT'},
-  {name:'Tito', chapters:3, testament:'NT'}, {name:'Filemom', chapters:1, testament:'NT'},
-  {name:'Hebreus', chapters:13, testament:'NT'}, {name:'Tiago', chapters:5, testament:'NT'},
-  {name:'1 Pedro', chapters:5, testament:'NT'}, {name:'2 Pedro', chapters:3, testament:'NT'},
-  {name:'1 João', chapters:5, testament:'NT'}, {name:'2 João', chapters:1, testament:'NT'},
-  {name:'3 João', chapters:1, testament:'NT'}, {name:'Judas', chapters:1, testament:'NT'},
-  {name:'Apocalipse', chapters:22, testament:'NT'},
+  {name:'Gênesis', abbrev:'gn', chapters:50, testament:'VT'}, {name:'Êxodo', abbrev:'ex', chapters:40, testament:'VT'},
+  {name:'Levítico', abbrev:'lv', chapters:27, testament:'VT'}, {name:'Números', abbrev:'nm', chapters:36, testament:'VT'},
+  {name:'Deuteronômio', abbrev:'dt', chapters:34, testament:'VT'}, {name:'Josué', abbrev:'js', chapters:24, testament:'VT'},
+  {name:'Juízes', abbrev:'jz', chapters:21, testament:'VT'}, {name:'Rute', abbrev:'rt', chapters:4, testament:'VT'},
+  {name:'1 Samuel', abbrev:'1sm', chapters:31, testament:'VT'}, {name:'2 Samuel', abbrev:'2sm', chapters:24, testament:'VT'},
+  {name:'1 Reis', abbrev:'1rs', chapters:22, testament:'VT'}, {name:'2 Reis', abbrev:'2rs', chapters:25, testament:'VT'},
+  {name:'1 Crônicas', abbrev:'1cr', chapters:29, testament:'VT'}, {name:'2 Crônicas', abbrev:'2cr', chapters:36, testament:'VT'},
+  {name:'Esdras', abbrev:'ed', chapters:10, testament:'VT'}, {name:'Neemias', abbrev:'ne', chapters:13, testament:'VT'},
+  {name:'Ester', abbrev:'et', chapters:10, testament:'VT'}, {name:'Jó', abbrev:'job', chapters:42, testament:'VT'},
+  {name:'Salmos', abbrev:'sl', chapters:150, testament:'VT'}, {name:'Provérbios', abbrev:'pv', chapters:31, testament:'VT'},
+  {name:'Eclesiastes', abbrev:'ec', chapters:12, testament:'VT'}, {name:'Cânticos', abbrev:'ct', chapters:8, testament:'VT'},
+  {name:'Isaías', abbrev:'is', chapters:66, testament:'VT'}, {name:'Jeremias', abbrev:'jr', chapters:52, testament:'VT'},
+  {name:'Lamentações', abbrev:'lm', chapters:5, testament:'VT'}, {name:'Ezequiel', abbrev:'ez', chapters:48, testament:'VT'},
+  {name:'Daniel', abbrev:'dn', chapters:12, testament:'VT'}, {name:'Oséias', abbrev:'os', chapters:14, testament:'VT'},
+  {name:'Joel', abbrev:'jl', chapters:3, testament:'VT'}, {name:'Amós', abbrev:'am', chapters:9, testament:'VT'},
+  {name:'Obadias', abbrev:'ob', chapters:1, testament:'VT'}, {name:'Jonas', abbrev:'jn', chapters:4, testament:'VT'},
+  {name:'Miquéias', abbrev:'mq', chapters:7, testament:'VT'}, {name:'Naum', abbrev:'na', chapters:3, testament:'VT'},
+  {name:'Habacuque', abbrev:'hc', chapters:3, testament:'VT'}, {name:'Sofonias', abbrev:'sf', chapters:3, testament:'VT'},
+  {name:'Ageu', abbrev:'ag', chapters:2, testament:'VT'}, {name:'Zacarias', abbrev:'zc', chapters:14, testament:'VT'},
+  {name:'Malaquias', abbrev:'ml', chapters:4, testament:'VT'},
+  {name:'Mateus', abbrev:'mt', chapters:28, testament:'NT'}, {name:'Marcos', abbrev:'mc', chapters:16, testament:'NT'},
+  {name:'Lucas', abbrev:'lc', chapters:24, testament:'NT'}, {name:'João', abbrev:'jo', chapters:21, testament:'NT'},
+  {name:'Atos', abbrev:'at', chapters:28, testament:'NT'}, {name:'Romanos', abbrev:'rm', chapters:16, testament:'NT'},
+  {name:'1 Coríntios', abbrev:'1co', chapters:16, testament:'NT'}, {name:'2 Coríntios', abbrev:'2co', chapters:13, testament:'NT'},
+  {name:'Gálatas', abbrev:'gl', chapters:6, testament:'NT'}, {name:'Efésios', abbrev:'ef', chapters:6, testament:'NT'},
+  {name:'Filipenses', abbrev:'fp', chapters:4, testament:'NT'}, {name:'Colossenses', abbrev:'cl', chapters:4, testament:'NT'},
+  {name:'1 Tessalonicenses', abbrev:'1ts', chapters:5, testament:'NT'}, {name:'2 Tessalonicenses', abbrev:'2ts', chapters:3, testament:'NT'},
+  {name:'1 Timóteo', abbrev:'1tm', chapters:6, testament:'NT'}, {name:'2 Timóteo', abbrev:'2tm', chapters:4, testament:'NT'},
+  {name:'Tito', abbrev:'tt', chapters:3, testament:'NT'}, {name:'Filemom', abbrev:'fm', chapters:1, testament:'NT'},
+  {name:'Hebreus', abbrev:'hb', chapters:13, testament:'NT'}, {name:'Tiago', abbrev:'tg', chapters:5, testament:'NT'},
+  {name:'1 Pedro', abbrev:'1pe', chapters:5, testament:'NT'}, {name:'2 Pedro', abbrev:'2pe', chapters:3, testament:'NT'},
+  {name:'1 João', abbrev:'1jo', chapters:5, testament:'NT'}, {name:'2 João', abbrev:'2jo', chapters:1, testament:'NT'},
+  {name:'3 João', abbrev:'3jo', chapters:1, testament:'NT'}, {name:'Judas', abbrev:'jd', chapters:1, testament:'NT'},
+  {name:'Apocalipse', abbrev:'ap', chapters:22, testament:'NT'},
 ];
 
 const SERMON_LABELS = {tematico:'Temático', textual:'Textual', expositivo:'Expositivo'};
@@ -1981,6 +1981,12 @@ let bibleReaderChapter = 1;
 const bibleChapterCache = {};
 
 let bibleLastError = null;
+let bibleUsingFallbackBooks = false;
+function localBibleBooksAsApiShape(){
+  // converte nosso dado local (nome + capítulos) pro mesmo formato que a API devolve,
+  // pra usar como reserva quando a rota /books da API estiver fora do ar
+  return BIBLE_BOOKS.map(b=>({abbrev:{pt:b.abbrev, en:b.abbrev}, name:b.name, chapters:b.chapters, testament:b.testament}));
+}
 async function loadBibleApiBooks(){
   if(bibleApiBooks) return bibleApiBooks;
   try{
@@ -1990,12 +1996,15 @@ async function loadBibleApiBooks(){
   try{
     const data = await bibleFetchJSON('/books');
     bibleApiBooks = data;
+    bibleUsingFallbackBooks = false;
     localStorage.setItem('kerygma_bible_books_v1', JSON.stringify(data));
     return data;
   }catch(e){
-    console.error(e);
+    console.warn('Rota /books da API indisponível, usando lista local como reserva (o texto ainda será buscado ao vivo):', e.message);
     bibleLastError = e;
-    return null;
+    bibleApiBooks = localBibleBooksAsApiShape();
+    bibleUsingFallbackBooks = true;
+    return bibleApiBooks;
   }
 }
 async function initBibleReaderView(){
