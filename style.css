@@ -797,3 +797,48 @@ button{font-family:inherit;}
   padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;
 }
 @media (min-width:900px){ .update-banner{left:auto;right:24px;bottom:24px;max-width:340px;} }
+
+/* ---------- REFERÊNCIA BÍBLICA (campo com botão) ---------- */
+.bible-ref-input{position:relative;}
+.bible-ref-input input{padding-right:44px!important;}
+.bible-ref-btn{
+  position:absolute;right:5px;top:50%;transform:translateY(-50%);width:32px;height:32px;
+  border:none;border-radius:9px;background:var(--blue-50);color:var(--blue-700);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.bible-ref-btn svg{width:16px;height:16px;}
+.bible-ref-btn:hover{background:var(--blue-100);}
+
+/* ---------- SELETOR / LEITOR: livros e capítulos ---------- */
+.bible-picker-sheet{max-height:80vh;}
+.bible-book-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;
+  max-height:50vh;overflow-y:auto;padding-bottom:4px;
+}
+.bible-book-chip{
+  border:1.5px solid var(--blue-100);background:white;color:var(--navy);font-size:12.5px;font-weight:600;
+  padding:10px 8px;border-radius:12px;cursor:pointer;text-align:center;
+}
+.bible-book-chip:hover{background:var(--blue-50);border-color:var(--blue-500);}
+.bible-chapter-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px;
+  max-height:42vh;overflow-y:auto;
+}
+.bible-chapter-btn{
+  border:1.5px solid var(--blue-100);background:white;color:var(--blue-700);font-weight:700;font-size:13.5px;
+  border-radius:10px;padding:10px 0;cursor:pointer;
+}
+.bible-chapter-btn:hover{background:var(--blue-50);}
+.bible-chapter-btn.selected{background:var(--blue-600);border-color:var(--blue-600);color:white;}
+
+/* ---------- LEITOR: versão e versículos ---------- */
+.bible-version-select{
+  border:1.5px solid var(--blue-100);background:white;color:var(--blue-700);font-weight:700;font-size:12.5px;
+  border-radius:999px;padding:7px 10px;outline:none;cursor:pointer;
+}
+.bible-verses{background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px;}
+.bible-verse{font-size:15.5px;line-height:1.8;color:var(--ink);margin:0 0 10px;}
+.bible-verse b{color:var(--blue-600);font-size:12px;font-weight:800;margin-right:5px;vertical-align:2px;}
+.bible-nav-buttons{display:flex;gap:10px;margin-bottom:20px;}
+.bible-nav-buttons .btn{flex:1;}
+.bible-loading{padding:40px 0;text-align:center;color:var(--muted);font-size:13.5px;}
