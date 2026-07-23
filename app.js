@@ -564,6 +564,7 @@ const NAV_ITEMS_DESKTOP = [
   {id:'home', label:'Início', ic:ICONS.home},
   {id:'folders', label:'Pastas', ic:ICONS.folder},
   {id:'library', label:'Biblioteca', ic:ICONS.library},
+  {id:'bible', label:'Bíblia', ic:ICONS.book},
   {id:'mindmaps', label:'Mapas', ic:ICONS.brain},
   {id:'guide', label:'Guia', ic:ICONS.compass},
 ];
@@ -1846,6 +1847,8 @@ function deleteCurrentMap(){
 let biblePickerTargetInput = null;
 let biblePickerSelectedBook = null;
 let biblePickerSelectedChapter = null;
+let biblePickerSelectedVerses = new Set();
+let biblePickerHasTextMode = true; // false = modo offline (sem prévia do texto)
 function openBiblePicker(btn){
   const wrap = btn.closest('.bible-ref-input');
   const input = wrap ? wrap.querySelector('input') : null;
@@ -1853,11 +1856,17 @@ function openBiblePicker(btn){
   biblePickerTargetInput = input;
   biblePickerSelectedBook = null;
   biblePickerSelectedChapter = null;
+  biblePickerSelectedVerses = new Set();
   document.getElementById('biblePickerSearch').value = '';
-  document.getElementById('biblePickerStep1').style.display = 'block';
-  document.getElementById('biblePickerStep2').style.display = 'none';
+  biblePickerGoToStep(1);
   renderBiblePickerBooks();
   openSheet('biblePickerOverlay');
+  loadBibleApiBooks(); // carrega em segundo plano pra já estar pronto quando escolher o capítulo
+}
+function biblePickerGoToStep(step){
+  document.getElementById('biblePickerStep1').style.display = step===1 ? 'block' : 'none';
+  document.getElementById('biblePickerStep2').style.display = step===2 ? 'block' : 'none';
+  document.getElementById('biblePickerStep3').style.display = step===3 ? 'block' : 'none';
 }
 function renderBiblePickerBooks(){
   const q = (document.getElementById('biblePickerSearch').value||'').trim().toLowerCase();
@@ -1872,21 +1881,71 @@ function selectBiblePickerBook(name){
   let html = '';
   for(let i=1;i<=biblePickerSelectedBook.chapters;i++) html += `<button type="button" class="bible-chapter-btn" onclick="selectBiblePickerChapter(${i})">${i}</button>`;
   document.getElementById('biblePickerChapters').innerHTML = html;
-  document.getElementById('biblePickerVerse').value = '';
-  document.getElementById('biblePickerStep1').style.display = 'none';
-  document.getElementById('biblePickerStep2').style.display = 'block';
+  biblePickerGoToStep(2);
 }
-function selectBiblePickerChapter(n){
+function biblePickerBackToBooks(){ biblePickerGoToStep(1); }
+function biblePickerBackToChapters(){ biblePickerGoToStep(2); }
+async function selectBiblePickerChapter(n){
   biblePickerSelectedChapter = n;
-  document.querySelectorAll('#biblePickerChapters .bible-chapter-btn').forEach(b=>b.classList.toggle('selected', +b.textContent===n));
+  biblePickerSelectedVerses = new Set();
+  document.getElementById('biblePickerChapterTitle').textContent = biblePickerSelectedBook.name+' '+n;
+  biblePickerGoToStep(3);
+  const versesEl = document.getElementById('biblePickerVersesList');
+  const manualEl = document.getElementById('biblePickerManualVerse');
+  versesEl.innerHTML = `<div class="bible-loading">Carregando texto...</div>`;
+  manualEl.style.display = 'none';
+  const books = await loadBibleApiBooks();
+  const apiBook = books ? books.find(b=>b.name===biblePickerSelectedBook.name) : null;
+  if(!apiBook){
+    // sem internet ou API indisponível: cai pro modo manual (só digitar o número do versículo)
+    biblePickerHasTextMode = false;
+    versesEl.innerHTML = '';
+    manualEl.style.display = 'block';
+    document.getElementById('biblePickerManualVerseInput').value = '';
+    return;
+  }
+  biblePickerHasTextMode = true;
+  try{
+    const res = await fetch(`${BIBLE_API}/verses/acf/${apiBook.abbrev.pt}/${n}`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    versesEl.innerHTML = data.verses.map(v=>`<button type="button" class="bible-picker-verse" data-num="${v.number}" onclick="toggleBiblePickerVerse(${v.number})"><b>${v.number}</b> ${escapeHTML(v.text)}</button>`).join('');
+  }catch(e){
+    console.error('Erro ao carregar texto para o seletor:', e);
+    biblePickerHasTextMode = false;
+    versesEl.innerHTML = '';
+    manualEl.style.display = 'block';
+    document.getElementById('biblePickerManualVerseInput').value = '';
+  }
 }
-function biblePickerBackToBooks(){
-  document.getElementById('biblePickerStep1').style.display = 'block';
-  document.getElementById('biblePickerStep2').style.display = 'none';
+function toggleBiblePickerVerse(n){
+  if(biblePickerSelectedVerses.has(n)) biblePickerSelectedVerses.delete(n);
+  else biblePickerSelectedVerses.add(n);
+  const el = document.querySelector(`.bible-picker-verse[data-num="${n}"]`);
+  if(el) el.classList.toggle('selected', biblePickerSelectedVerses.has(n));
+}
+function formatVerseRanges(nums){
+  const sorted = [...nums].sort((a,b)=>a-b);
+  if(!sorted.length) return '';
+  const ranges = [];
+  let start = sorted[0], prev = sorted[0];
+  for(let i=1;i<sorted.length;i++){
+    const n = sorted[i];
+    if(n===prev+1){ prev=n; continue; }
+    ranges.push(start===prev ? `${start}` : `${start}-${prev}`);
+    start = prev = n;
+  }
+  ranges.push(start===prev ? `${start}` : `${start}-${prev}`);
+  return ranges.join(',');
 }
 function confirmBiblePicker(){
   if(!biblePickerSelectedBook || !biblePickerSelectedChapter){ toast('Escolha o livro e o capítulo'); return; }
-  const verse = document.getElementById('biblePickerVerse').value.trim();
+  let verse = '';
+  if(biblePickerHasTextMode){
+    verse = formatVerseRanges(biblePickerSelectedVerses);
+  }else{
+    verse = document.getElementById('biblePickerManualVerseInput').value.trim();
+  }
   let ref = `${biblePickerSelectedBook.name} ${biblePickerSelectedChapter}`;
   if(verse) ref += `:${verse}`;
   if(biblePickerTargetInput){
@@ -1923,66 +1982,55 @@ async function loadBibleApiBooks(){
   }
 }
 async function initBibleReaderView(){
-  document.getElementById('bible-step-books').style.display = 'block';
-  document.getElementById('bible-step-chapters').style.display = 'none';
-  document.getElementById('bible-step-reading').style.display = 'none';
-  document.getElementById('bibleReaderVersion').style.display = 'none';
-  document.getElementById('bibleReaderTitle').textContent = 'Bíblia';
-  const list = document.getElementById('bibleReaderBooksList');
-  list.innerHTML = `<div class="bible-loading">Carregando livros...</div>`;
+  document.getElementById('bibleBookLabel').textContent = 'Carregando...';
   const books = await loadBibleApiBooks();
   if(!books){
-    list.innerHTML = emptyState(ICONS.search,'Não foi possível carregar','Verifique sua conexão com a internet e tente novamente.');
+    document.getElementById('bibleReaderVerses').innerHTML = emptyState(ICONS.search,'Não foi possível carregar os livros','Verifique sua conexão com a internet e tente novamente.');
     return;
   }
-  renderBibleReaderBooks();
+  if(!bibleReaderBook) bibleReaderBook = books.find(b=>b.abbrev.pt==='jo') || books[0];
+  document.getElementById('bibleBookSearchInput').value = '';
+  renderBibleBookOptions();
+  renderBibleChapterOptions();
+  document.getElementById('bibleBookLabel').textContent = bibleReaderBook.name;
+  document.getElementById('bibleChapterLabel').textContent = bibleReaderChapter;
+  loadBibleChapter();
 }
-function bibleReaderBack(){
-  if(document.getElementById('bible-step-reading').style.display!=='none'){ bibleReaderBackToChapters(); return; }
-  if(document.getElementById('bible-step-chapters').style.display!=='none'){ bibleReaderBackToBooks(); return; }
-  showView('more');
-}
-function renderBibleReaderBooks(){
-  const q = (document.getElementById('bibleReaderSearch').value||'').trim().toLowerCase();
-  const list = document.getElementById('bibleReaderBooksList');
-  if(!bibleApiBooks){ return; }
+function renderBibleBookOptions(){
+  const q = (document.getElementById('bibleBookSearchInput').value||'').trim().toLowerCase();
+  const wrap = document.getElementById('bibleBookOptions');
+  if(!bibleApiBooks) return;
   const books = q ? bibleApiBooks.filter(b=>b.name.toLowerCase().includes(q)) : bibleApiBooks;
-  list.innerHTML = books.map(b=>`<button type="button" class="bible-book-chip" onclick='selectBibleReaderBook(${JSON.stringify(b.abbrev.pt)})'>${escapeHTML(b.name)}</button>`).join('') || `<div class="hint">Nenhum livro encontrado.</div>`;
+  wrap.innerHTML = books.map(b=>`<div class="custom-select-option ${bibleReaderBook&&b.abbrev.pt===bibleReaderBook.abbrev.pt?'selected':''}" onclick='selectBibleReaderBook(${JSON.stringify(b.abbrev.pt)})'>${escapeHTML(b.name)}</div>`).join('') || `<div class="hint" style="padding:10px;">Nenhum livro encontrado.</div>`;
+}
+function renderBibleChapterOptions(){
+  const wrap = document.getElementById('bibleChapterOptions');
+  let html = '';
+  for(let i=1;i<=bibleReaderBook.chapters;i++) html += `<div class="custom-select-option ${i===bibleReaderChapter?'selected':''}" onclick="selectBibleReaderChapter(${i})">Capítulo ${i}</div>`;
+  wrap.innerHTML = html;
 }
 function selectBibleReaderBook(abbrev){
-  bibleReaderBook = bibleApiBooks.find(b=>b.abbrev.pt===abbrev);
-  if(!bibleReaderBook) return;
-  let html = '';
-  for(let i=1;i<=bibleReaderBook.chapters;i++) html += `<button type="button" class="bible-chapter-btn" onclick="selectBibleReaderChapter(${i})">${i}</button>`;
-  document.getElementById('bibleReaderChaptersList').innerHTML = html;
-  document.getElementById('bible-step-books').style.display = 'none';
-  document.getElementById('bible-step-chapters').style.display = 'block';
-  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name;
-}
-function bibleReaderBackToBooks(){
-  document.getElementById('bible-step-books').style.display = 'block';
-  document.getElementById('bible-step-chapters').style.display = 'none';
-  document.getElementById('bibleReaderVersion').style.display = 'none';
-  document.getElementById('bibleReaderTitle').textContent = 'Bíblia';
-}
-function bibleReaderBackToChapters(){
-  document.getElementById('bible-step-chapters').style.display = 'block';
-  document.getElementById('bible-step-reading').style.display = 'none';
-  document.getElementById('bibleReaderVersion').style.display = 'none';
-  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name;
+  const book = bibleApiBooks.find(b=>b.abbrev.pt===abbrev);
+  if(!book) return;
+  bibleReaderBook = book;
+  bibleReaderChapter = 1;
+  document.getElementById('bibleBookLabel').textContent = book.name;
+  document.getElementById('bibleChapterLabel').textContent = 1;
+  renderBibleChapterOptions();
+  toggleCustomSelect('bibleBookSelect', false);
+  loadBibleChapter();
 }
 function selectBibleReaderChapter(n){
   bibleReaderChapter = n;
-  document.getElementById('bible-step-chapters').style.display = 'none';
-  document.getElementById('bible-step-reading').style.display = 'block';
-  document.getElementById('bibleReaderVersion').style.display = '';
+  document.getElementById('bibleChapterLabel').textContent = n;
+  renderBibleChapterOptions();
+  toggleCustomSelect('bibleChapterSelect', false);
   loadBibleChapter();
 }
 async function loadBibleChapter(){
   const version = document.getElementById('bibleReaderVersion').value;
   const abbrev = bibleReaderBook.abbrev.pt;
   const key = version+'/'+abbrev+'/'+bibleReaderChapter;
-  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name+' '+bibleReaderChapter;
   document.getElementById('bibleReaderPrevBtn').disabled = bibleReaderChapter<=1;
   document.getElementById('bibleReaderNextBtn').disabled = bibleReaderChapter>=bibleReaderBook.chapters;
   const versesEl = document.getElementById('bibleReaderVerses');
@@ -1990,20 +2038,20 @@ async function loadBibleChapter(){
   versesEl.innerHTML = `<div class="bible-loading">Carregando...</div>`;
   try{
     const res = await fetch(`${BIBLE_API}/verses/${version}/${abbrev}/${bibleReaderChapter}`);
-    if(!res.ok) throw new Error('falha ao buscar capítulo');
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     bibleChapterCache[key] = data;
     renderBibleVerses(data);
   }catch(e){
-    console.error(e);
-    versesEl.innerHTML = emptyState(ICONS.search,'Não foi possível carregar','Verifique sua conexão com a internet e tente novamente.');
+    console.error('Erro ao carregar capítulo da Bíblia:', e);
+    versesEl.innerHTML = emptyState(ICONS.search,'Não foi possível carregar',`Verifique sua conexão com a internet e tente novamente. (${e.message||'erro desconhecido'})`);
   }
 }
 function renderBibleVerses(data){
   document.getElementById('bibleReaderVerses').innerHTML = data.verses.map(v=>`<p class="bible-verse"><b>${v.number}</b> ${escapeHTML(v.text)}</p>`).join('');
 }
-function bibleReaderPrevChapter(){ if(bibleReaderChapter>1){ bibleReaderChapter--; loadBibleChapter(); } }
-function bibleReaderNextChapter(){ if(bibleReaderChapter<bibleReaderBook.chapters){ bibleReaderChapter++; loadBibleChapter(); } }
+function bibleReaderPrevChapter(){ if(bibleReaderChapter>1){ selectBibleReaderChapter(bibleReaderChapter-1); } }
+function bibleReaderNextChapter(){ if(bibleReaderChapter<bibleReaderBook.chapters){ selectBibleReaderChapter(bibleReaderChapter+1); } }
 
 function openRenameMap(){
   const map = getMap();
