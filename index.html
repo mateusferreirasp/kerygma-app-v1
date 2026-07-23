@@ -337,6 +337,11 @@
     <section class="view" id="view-more">
       <div class="section-title" style="margin-top:0"><h2>Mais</h2></div>
       <div class="more-list">
+        <button class="more-item" onclick="showView('bible')">
+          <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 012-2h6v18H6a2 2 0 01-2-2V5z"/><path d="M20 5a2 2 0 00-2-2h-6v18h6a2 2 0 002-2V5z"/></svg></div>
+          <div class="more-item-label">Bíblia</div>
+          <div class="chev">›</div>
+        </button>
         <button class="more-item" onclick="showView('mindmaps')">
           <div class="more-item-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7.3L11 16M16 7.3L13 16M8.5 6h7"/></svg></div>
           <div class="more-item-label">Mapas mentais</div>
@@ -360,6 +365,41 @@
         </button>
       </div>
       <button class="more-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Sair da conta</button>
+    </section>
+
+    <!-- BIBLE READER -->
+    <section class="view" id="view-bible">
+      <div class="back-row">
+        <button class="icon-btn" onclick="bibleReaderBack()">←</button>
+        <div class="back-title" id="bibleReaderTitle">Bíblia</div>
+        <select id="bibleReaderVersion" class="bible-version-select" onchange="loadBibleChapter()" style="margin-left:auto;display:none">
+          <option value="acf">ACF</option>
+          <option value="ra">RA</option>
+          <option value="nvi">NVI</option>
+          <option value="kjv">KJV</option>
+        </select>
+      </div>
+
+      <div id="bible-step-books">
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+          <input type="text" id="bibleReaderSearch" placeholder="Buscar livro..." oninput="renderBibleReaderBooks()">
+        </div>
+        <div class="bible-book-grid" id="bibleReaderBooksList"></div>
+      </div>
+
+      <div id="bible-step-chapters" style="display:none">
+        <div class="hint" style="margin-bottom:8px;">Escolha o capítulo</div>
+        <div class="bible-chapter-grid" id="bibleReaderChaptersList"></div>
+      </div>
+
+      <div id="bible-step-reading" style="display:none">
+        <div id="bibleReaderVerses" class="bible-verses"></div>
+        <div class="bible-nav-buttons">
+          <button class="btn btn-secondary" id="bibleReaderPrevBtn" onclick="bibleReaderPrevChapter()">‹ Anterior</button>
+          <button class="btn btn-secondary" id="bibleReaderNextBtn" onclick="bibleReaderNextChapter()">Próximo ›</button>
+        </div>
+      </div>
     </section>
 
     <!-- DRAFTS -->
@@ -561,6 +601,34 @@
     <div style="display:flex;gap:10px;">
       <button class="btn btn-secondary btn-block" onclick="closeSheet('confirmOverlay')">Cancelar</button>
       <button class="btn btn-danger btn-block" id="confirmActionBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BIBLE REFERENCE PICKER SHEET -->
+<div class="overlay" id="biblePickerOverlay" onclick="if(event.target===this)closeSheet('biblePickerOverlay')">
+  <div class="sheet bible-picker-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Escolher referência bíblica</div>
+    <div id="biblePickerStep1">
+      <div class="search-bar" style="margin-bottom:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+        <input type="text" id="biblePickerSearch" placeholder="Buscar livro..." oninput="renderBiblePickerBooks()">
+      </div>
+      <div class="bible-book-grid" id="biblePickerBooksList"></div>
+    </div>
+    <div id="biblePickerStep2" style="display:none">
+      <div class="back-row" style="margin-bottom:12px;">
+        <button type="button" class="icon-btn" onclick="biblePickerBackToBooks()">←</button>
+        <div class="back-title" id="biblePickerBookName" style="font-size:16.5px;">Livro</div>
+      </div>
+      <div class="hint" style="margin-bottom:8px;">Capítulo</div>
+      <div class="bible-chapter-grid" id="biblePickerChapters"></div>
+      <div class="field" style="margin-top:16px;">
+        <label>Versículo(s) — opcional</label>
+        <input type="text" id="biblePickerVerse" placeholder="Ex: 16 ou 1-5">
+      </div>
+      <button type="button" class="btn btn-primary btn-block" onclick="confirmBiblePicker()">Inserir referência</button>
     </div>
   </div>
 </div>
