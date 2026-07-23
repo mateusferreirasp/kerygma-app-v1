@@ -25,6 +25,7 @@ const ICONS = {
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></svg>',
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6.5 5.5 5.5 0 0121.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>',
   bookmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>',
+  notepad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 2v4M15 2v4"/><path d="M8 11h8M8 15h5"/></svg>',
   compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5l-2 5-5 2 2-5 5-2z"/></svg>',
   library: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>',
   more: '<svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="19" cy="12" r="1.7" fill="currentColor"/></svg>',
@@ -462,13 +463,19 @@ const SUMMARY_FIELDS = [
   {key:'pontos', label:'Ideias e pontos de destaque', type:'points', schema:'summary', hint:'Cada ponto pode ter uma ideia principal, conteúdo e uma frase de destaque.'},
 ];
 
+/* NOTA — rápida, só um campo de texto livre */
+const NOTES_FIELDS = [
+  {key:'conteudo', label:'Conteúdo', type:'textarea', big:true, placeholder:'Escreva sua nota livremente...'},
+];
+
 const SERMON_LABELS = {tematico:'Temático', textual:'Textual', expositivo:'Expositivo'};
-const TYPE_LABELS = {sermon:'Sermão', study:'Estudo', devotional:'Devocional', summary:'Resumo'};
+const TYPE_LABELS = {sermon:'Sermão', study:'Estudo', devotional:'Devocional', summary:'Resumo', notes:'Nota'};
 function getFieldsConfig(type, subtype){
   if(type==='sermon') return SERMON_FIELDS[subtype] || [];
   if(type==='study') return STUDY_FIELDS;
   if(type==='devotional') return DEVOTIONAL_FIELDS;
   if(type==='summary') return SUMMARY_FIELDS;
+  if(type==='notes') return NOTES_FIELDS;
   return [];
 }
 
@@ -486,7 +493,7 @@ const NAV_ITEMS_MOBILE = [
   {id:'library', label:'Biblioteca', ic:ICONS.library},
   {id:'more', label:'Mais', ic:ICONS.more},
 ];
-const MORE_VIEWS = ['mindmaps','guide','prayers','notifications','settings','more'];
+const MORE_VIEWS = ['mindmaps','guide','notifications','settings','more'];
 function renderNav(){
   const side = document.getElementById('sideNav');
   side.innerHTML = NAV_ITEMS_DESKTOP.map(n=>`<button data-nav="${n.id}" class="${currentView===n.id?'active':''}" title="${n.label}" onclick="showView('${n.id}')"><span class="ic">${n.ic}</span><span class="nav-label">${n.label}</span></button>`).join('');
@@ -542,7 +549,7 @@ async function showView(name){
   if(name==='notifications') renderNotifications();
   if(name==='prayers') renderPrayers();
   if(name==='drafts') renderDrafts();
-  if(name==='library'){ libraryTab='published'; setLibraryTab('published'); renderLibrary(); }
+  if(name==='library'){ libraryTab='published'; setLibraryTab('published'); renderLibrary(); updateDraftsWidget(); }
 }
 
 /* ================= TOAST ================= */
@@ -565,13 +572,13 @@ function backToCreateSheet(){ closeSheet('sermonTypeOverlay'); openSheet('create
 /* ================= HOME ================= */
 function renderHome(){
   document.getElementById('statsRow').innerHTML = `
+    ${statCard(db.items.filter(i=>i.type==='devotional').length,'Devocional')}
     ${statCard(db.items.filter(i=>i.type==='sermon').length,'Sermões')}
     ${statCard(db.items.filter(i=>i.type==='study').length,'Estudos')}
     ${statCard(db.folders.length,'Pastas')}
     ${statCard(db.mindmaps.length,'Mapas')}
+    ${statCard(db.items.filter(i=>i.type==='notes').length,'Notas')}
   `;
-  updateStreakWidget();
-  updatePrayerWidget();
   updateDraftsWidget();
   const q = (document.getElementById('homeSearch').value||'').trim().toLowerCase();
   const list = document.getElementById('recentList');
@@ -586,32 +593,6 @@ function renderHome(){
     return;
   }
   list.innerHTML = recent.map(itemCardHTML).join('');
-}
-function calculateDevotionalStreak(){
-  const fmt = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const dates = new Set(db.items.filter(i=>i.type==='devotional').map(i=>fmt(new Date(i.createdAt))));
-  if(!dates.size) return 0;
-  let cursor = new Date();
-  if(!dates.has(fmt(cursor))) cursor.setDate(cursor.getDate()-1);
-  let streak = 0;
-  while(dates.has(fmt(cursor))){
-    streak++;
-    cursor.setDate(cursor.getDate()-1);
-  }
-  return streak;
-}
-function updateStreakWidget(){
-  const streak = calculateDevotionalStreak();
-  const numEl = document.getElementById('streakNum');
-  const lblEl = document.getElementById('streakLabel');
-  if(!numEl) return;
-  numEl.textContent = streak;
-  lblEl.textContent = streak>0 ? (streak===1 ? 'dia seguido de devocional' : 'dias seguidos de devocional') : 'Comece hoje seu devocional';
-}
-function updatePrayerWidget(){
-  const el = document.getElementById('prayerCount');
-  if(!el) return;
-  el.textContent = db.prayers ? db.prayers.filter(p=>!p.answered).length : 0;
 }
 function statCard(n,l){ return `<div class="stat-card"><div class="stat-num">${n}</div><div class="stat-lbl">${l}</div></div>`; }
 function emptyState(ic,title,desc){ return `<div class="empty-state"><div class="ic">${ic}</div><div class="title">${title}</div><div class="desc">${desc}</div></div>`; }
@@ -707,12 +688,14 @@ function typeTagHTML(item){
   if(item.type==='sermon') return `<span class="tag ${item.subtype}">${SERMON_LABELS[item.subtype]}</span>`;
   if(item.type==='devotional') return `<span class="tag devotional">Devocional</span>`;
   if(item.type==='summary') return `<span class="tag summary">Resumo</span>`;
+  if(item.type==='notes') return `<span class="tag notes">Nota</span>`;
   return `<span class="tag study">Estudo</span>`;
 }
 function typeIcon(item){
   if(item.type==='sermon') return ICONS.book;
   if(item.type==='devotional') return ICONS.heart;
   if(item.type==='summary') return ICONS.bookmark;
+  if(item.type==='notes') return ICONS.notepad;
   return ICONS.note;
 }
 function itemCardHTML(item){
@@ -856,7 +839,7 @@ async function startNewItem(type, subtype){
   ctx.formType = type;
   ctx.formSubtype = subtype || null;
   ctx.activeFormTab = null;
-  const titles = {sermon:'Novo sermão '+(SERMON_LABELS[subtype]||''), study:'Novo estudo', devotional:'Novo devocional', summary:'Novo resumo'};
+  const titles = {sermon:'Novo sermão '+(SERMON_LABELS[subtype]||''), study:'Novo estudo', devotional:'Novo devocional', summary:'Novo resumo', notes:'Nova nota'};
   document.getElementById('formTitle').textContent = titles[type] || 'Novo';
   updateFormTypeTag(type, subtype);
   document.getElementById('f-title').value = '';
@@ -1272,15 +1255,18 @@ function renderDrafts(){
     </div>`).join('');
 }
 function updateDraftsWidget(){
-  const card = document.getElementById('draftsCard');
-  if(!card) return;
   const drafts = db.drafts || [];
-  if(drafts.length){
-    card.style.display = 'flex';
-    document.getElementById('draftsCount').textContent = drafts.length;
-  }else{
-    card.style.display = 'none';
+  const card = document.getElementById('draftsCard');
+  if(card){
+    if(drafts.length){
+      card.style.display = 'flex';
+      document.getElementById('draftsCount').textContent = drafts.length;
+    }else{
+      card.style.display = 'none';
+    }
   }
+  const tabCount = document.getElementById('draftsTabCount');
+  if(tabCount) tabCount.textContent = drafts.length ? drafts.length : '';
 }
 
 /* ================= ITEM DETAIL ================= */
@@ -2057,7 +2043,6 @@ async function addPrayer(){
   prayerTab = 'pending';
   document.querySelectorAll('#view-prayers .form-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab==='pending'));
   renderPrayers();
-  updatePrayerWidget();
   toast('Pedido adicionado');
 }
 async function togglePrayerAnswered(id){
@@ -2069,7 +2054,6 @@ async function togglePrayerAnswered(id){
   p.answered = newVal;
   p.answeredAt = newVal ? Date.now() : null;
   renderPrayers();
-  updatePrayerWidget();
   if(newVal) addNotification('Oração respondida!', `"${truncateText(p.text,60)}" foi marcado como respondido.`);
 }
 function deletePrayer(id){
@@ -2079,7 +2063,6 @@ function deletePrayer(id){
     db.prayers = db.prayers.filter(p=>p.id!==id);
     closeSheet('confirmOverlay');
     renderPrayers();
-    updatePrayerWidget();
   });
 }
 function renderPrayers(){
