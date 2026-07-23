@@ -1,7 +1,13 @@
 // Service worker mínimo do Kerygma — necessário para o navegador
-// considerar o app "instalável". Não faz cache agressivo: sempre
-// busca a versão mais nova da rede quando possível.
-const CACHE_NAME = 'kerygma-shell-v1';
+// considerar o app "instalável". Estratégia: sempre busca a versão mais
+// nova diretamente da rede (ignorando cache HTTP do navegador), e só
+// usa a cópia salva localmente se estiver sem internet.
+//
+// IMPORTANTE: sempre que os arquivos do app forem atualizados, mude o
+// número da CACHE_VERSION abaixo — isso força todo mundo a receber a
+// versão nova automaticamente, sem precisar limpar dados manualmente.
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = 'kerygma-shell-' + CACHE_VERSION;
 const SHELL_FILES = ['./index.html', './style.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -23,7 +29,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
