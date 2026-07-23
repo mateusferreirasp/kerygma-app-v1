@@ -811,6 +811,14 @@ button{font-family:inherit;}
 
 /* ---------- SELETOR / LEITOR: livros e capítulos ---------- */
 .bible-picker-sheet{max-height:80vh;}
+.bible-picker-verses{max-height:44vh;overflow-y:auto;border:1px solid var(--blue-50);border-radius:12px;padding:4px;}
+.bible-picker-verse{
+  display:block;width:100%;text-align:left;background:none;border:none;border-radius:9px;
+  padding:8px 10px;font-size:14px;line-height:1.6;color:var(--ink);cursor:pointer;
+}
+.bible-picker-verse:hover{background:var(--blue-50);}
+.bible-picker-verse.selected{background:var(--blue-100);}
+.bible-picker-verse b{color:var(--blue-600);font-size:11px;font-weight:800;margin-right:5px;}
 .bible-book-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;
   max-height:50vh;overflow-y:auto;padding-bottom:4px;
@@ -842,3 +850,17 @@ button{font-family:inherit;}
 .bible-nav-buttons{display:flex;gap:10px;margin-bottom:20px;}
 .bible-nav-buttons .btn{flex:1;}
 .bible-loading{padding:40px 0;text-align:center;color:var(--muted);font-size:13.5px;}
+
+/* ---------- LEITOR DA BÍBLIA: controles fixos no topo ---------- */
+.bible-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.bible-book-select{flex:2;min-width:140px;}
+.bible-chapter-select{flex:1;min-width:100px;}
+.bible-select-panel{padding:0;max-height:280px;}
+.bible-select-search{
+  width:100%;border:none;border-bottom:1px solid var(--blue-50);outline:none;
+  padding:11px 12px;font-size:13.5px;font-family:inherit;color:var(--ink);position:sticky;top:0;background:white;
+}
+.bible-select-panel .custom-select-option{margin:2px 6px;}
+.bible-select-panel #bibleBookOptions{padding:4px 0;max-height:230px;overflow-y:auto;}
+.bible-chapter-panel{max-height:260px;}
+.bible-controls .bible-version-select{flex-shrink:0;}
