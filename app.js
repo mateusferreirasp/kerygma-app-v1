@@ -415,8 +415,8 @@ const POINT_SCHEMAS = {
     titleKey: 'titulo',
     fields: [
       {key:'titulo', label:'Título do ponto', type:'text', placeholder:'Ex: A fé em tempos de crise'},
-      {key:'referencia', label:'Referência bíblica', type:'text', placeholder:'Ex: Gênesis 26:1-6'},
-      {key:'apoio', label:'Texto de apoio (opcional)', type:'text', placeholder:'Ex: Mateus 6:31-33'},
+      {key:'referencia', label:'Referência bíblica', type:'text', placeholder:'Ex: Gênesis 26:1-6', bible:true},
+      {key:'apoio', label:'Texto de apoio (opcional)', type:'text', placeholder:'Ex: Mateus 6:31-33', bible:true},
       {key:'explicacao', label:'Explicação', type:'textarea'},
       {key:'aplicacao', label:'Aplicação', type:'textarea'},
     ]
@@ -424,7 +424,7 @@ const POINT_SCHEMAS = {
   oia: {
     titleKey: 'referencia',
     fields: [
-      {key:'referencia', label:'Referência (versículo ou trecho)', type:'text', placeholder:'Ex: João 3:16'},
+      {key:'referencia', label:'Referência (versículo ou trecho)', type:'text', placeholder:'Ex: João 3:16', bible:true},
       {key:'observacao', label:'Observação', type:'textarea', placeholder:'O que o texto diz, de forma simples? Fatos, contexto...'},
       {key:'interpretacao', label:'Interpretação', type:'textarea', placeholder:'O que isso significa?'},
       {key:'aplicacao', label:'Aplicação', type:'textarea', placeholder:'Como aplicar isso hoje?'},
@@ -443,7 +443,7 @@ const POINT_SCHEMAS = {
 const SERMON_FIELDS = {
   tematico: [
     {key:'tema', label:'Tema central', type:'text', tab:'geral'},
-    {key:'textoBase', label:'Texto base (referência)', type:'text', tab:'geral'},
+    {key:'textoBase', label:'Texto base (referência)', type:'text', tab:'geral', bible:true},
     {key:'introducao', label:'Introdução', type:'textarea', tab:'geral'},
     {key:'pontos', label:'Pontos principais', type:'points', schema:'sermon', tab:'pontos', hint:'Adicione quantos pontos quiser. Cada um pode ter sua própria referência e aplicação.'},
     {key:'ilustracoes', label:'Ilustrações', type:'textarea', tab:'pontos'},
@@ -452,7 +452,7 @@ const SERMON_FIELDS = {
     {key:'apelo', label:'Apelo / desafio final', type:'textarea', tab:'fechamento', hint:'Opcional. Um chamado direto ao ouvinte, além da conclusão.'},
   ],
   textual: [
-    {key:'textoBase', label:'Texto base', type:'text', tab:'geral'},
+    {key:'textoBase', label:'Texto base', type:'text', tab:'geral', bible:true},
     {key:'contexto', label:'Contexto do texto', type:'textarea', tab:'geral'},
     {key:'divisao', label:'Divisão do texto', type:'points', schema:'sermon', tab:'pontos', hint:'Cada parte do texto vira um ponto, com sua própria referência e aplicação.'},
     {key:'aplicacao', label:'Aplicação prática geral', type:'textarea', tab:'fechamento'},
@@ -460,7 +460,7 @@ const SERMON_FIELDS = {
     {key:'apelo', label:'Apelo / desafio final', type:'textarea', tab:'fechamento', hint:'Opcional. Um chamado direto ao ouvinte, além da conclusão.'},
   ],
   expositivo: [
-    {key:'passagem', label:'Passagem / livro', type:'text', tab:'geral'},
+    {key:'passagem', label:'Passagem / livro', type:'text', tab:'geral', bible:true},
     {key:'contextoHistorico', label:'Contexto histórico e literário', type:'textarea', tab:'geral'},
     {key:'analiseVersiculos', label:'Análise versículo a versículo', type:'points', schema:'sermon', tab:'pontos', hint:'Cada versículo ou bloco de versículos vira um ponto, com referência, explicação e aplicação.'},
     {key:'aplicacao', label:'Aplicação prática geral', type:'textarea', tab:'fechamento'},
@@ -471,7 +471,7 @@ const SERMON_FIELDS = {
 
 /* ESTUDO — reestruturado em abas: Geral / Desenvolvimento (OIA) / Perguntas */
 const STUDY_FIELDS = [
-  {key:'passagem', label:'Passagem / texto principal', type:'text', tab:'geral', placeholder:'Ex: João 3:16-21'},
+  {key:'passagem', label:'Passagem / texto principal', type:'text', tab:'geral', placeholder:'Ex: João 3:16-21', bible:true},
   {key:'tema', label:'Tema', type:'text', tab:'geral', placeholder:'Ex: Graça, Salvação', hint:'Palavras-chave separadas por vírgula.'},
   {key:'desenvolvimento', label:'Contexto, Observações, Interpretação e Aplicação', type:'points', schema:'oia', tab:'oia', hint:'Adicione um bloco para cada trecho que for estudar — cada um tem espaço para observação, interpretação e aplicação.'},
   {key:'perguntas', label:'Perguntas para reflexão', type:'textarea', tab:'perguntas', big:true, hint:'Ótimo para uso em pequenos grupos ou aplicação pessoal.'},
@@ -491,7 +491,7 @@ const FORM_TABS = {
 
 /* DEVOCIONAL — método SOAP (Scripture, Observation, Application, Prayer) */
 const DEVOTIONAL_FIELDS = [
-  {key:'escritura', label:'Escritura', type:'text', placeholder:'O versículo que mais chamou sua atenção hoje'},
+  {key:'escritura', label:'Escritura', type:'text', placeholder:'O versículo que mais chamou sua atenção hoje', bible:true},
   {key:'observacao', label:'Observação', type:'textarea', placeholder:'O que esse versículo diz, de forma simples?'},
   {key:'aplicacao', label:'Aplicação', type:'textarea', placeholder:'Como você vai aplicar isso hoje? (o ponto principal)'},
   {key:'oracao', label:'Oração', type:'textarea', placeholder:'Uma breve oração baseada na meditação de hoje'},
@@ -506,6 +506,46 @@ const SUMMARY_FIELDS = [
 /* NOTA — rápida, só um campo de texto livre */
 const NOTES_FIELDS = [
   {key:'conteudo', label:'Conteúdo', type:'textarea', big:true, placeholder:'Escreva sua nota livremente...'},
+];
+
+/* ================= BÍBLIA — dados estruturais (livro/capítulos) =================
+   Isso é só a ESTRUTURA da Bíblia (nomes dos livros e quantos capítulos cada um tem),
+   não o texto — por isso pode ficar embutido no app sem problema de direitos autorais. */
+const BIBLE_BOOKS = [
+  {name:'Gênesis', chapters:50, testament:'VT'}, {name:'Êxodo', chapters:40, testament:'VT'},
+  {name:'Levítico', chapters:27, testament:'VT'}, {name:'Números', chapters:36, testament:'VT'},
+  {name:'Deuteronômio', chapters:34, testament:'VT'}, {name:'Josué', chapters:24, testament:'VT'},
+  {name:'Juízes', chapters:21, testament:'VT'}, {name:'Rute', chapters:4, testament:'VT'},
+  {name:'1 Samuel', chapters:31, testament:'VT'}, {name:'2 Samuel', chapters:24, testament:'VT'},
+  {name:'1 Reis', chapters:22, testament:'VT'}, {name:'2 Reis', chapters:25, testament:'VT'},
+  {name:'1 Crônicas', chapters:29, testament:'VT'}, {name:'2 Crônicas', chapters:36, testament:'VT'},
+  {name:'Esdras', chapters:10, testament:'VT'}, {name:'Neemias', chapters:13, testament:'VT'},
+  {name:'Ester', chapters:10, testament:'VT'}, {name:'Jó', chapters:42, testament:'VT'},
+  {name:'Salmos', chapters:150, testament:'VT'}, {name:'Provérbios', chapters:31, testament:'VT'},
+  {name:'Eclesiastes', chapters:12, testament:'VT'}, {name:'Cânticos', chapters:8, testament:'VT'},
+  {name:'Isaías', chapters:66, testament:'VT'}, {name:'Jeremias', chapters:52, testament:'VT'},
+  {name:'Lamentações', chapters:5, testament:'VT'}, {name:'Ezequiel', chapters:48, testament:'VT'},
+  {name:'Daniel', chapters:12, testament:'VT'}, {name:'Oséias', chapters:14, testament:'VT'},
+  {name:'Joel', chapters:3, testament:'VT'}, {name:'Amós', chapters:9, testament:'VT'},
+  {name:'Obadias', chapters:1, testament:'VT'}, {name:'Jonas', chapters:4, testament:'VT'},
+  {name:'Miquéias', chapters:7, testament:'VT'}, {name:'Naum', chapters:3, testament:'VT'},
+  {name:'Habacuque', chapters:3, testament:'VT'}, {name:'Sofonias', chapters:3, testament:'VT'},
+  {name:'Ageu', chapters:2, testament:'VT'}, {name:'Zacarias', chapters:14, testament:'VT'},
+  {name:'Malaquias', chapters:4, testament:'VT'},
+  {name:'Mateus', chapters:28, testament:'NT'}, {name:'Marcos', chapters:16, testament:'NT'},
+  {name:'Lucas', chapters:24, testament:'NT'}, {name:'João', chapters:21, testament:'NT'},
+  {name:'Atos', chapters:28, testament:'NT'}, {name:'Romanos', chapters:16, testament:'NT'},
+  {name:'1 Coríntios', chapters:16, testament:'NT'}, {name:'2 Coríntios', chapters:13, testament:'NT'},
+  {name:'Gálatas', chapters:6, testament:'NT'}, {name:'Efésios', chapters:6, testament:'NT'},
+  {name:'Filipenses', chapters:4, testament:'NT'}, {name:'Colossenses', chapters:4, testament:'NT'},
+  {name:'1 Tessalonicenses', chapters:5, testament:'NT'}, {name:'2 Tessalonicenses', chapters:3, testament:'NT'},
+  {name:'1 Timóteo', chapters:6, testament:'NT'}, {name:'2 Timóteo', chapters:4, testament:'NT'},
+  {name:'Tito', chapters:3, testament:'NT'}, {name:'Filemom', chapters:1, testament:'NT'},
+  {name:'Hebreus', chapters:13, testament:'NT'}, {name:'Tiago', chapters:5, testament:'NT'},
+  {name:'1 Pedro', chapters:5, testament:'NT'}, {name:'2 Pedro', chapters:3, testament:'NT'},
+  {name:'1 João', chapters:5, testament:'NT'}, {name:'2 João', chapters:1, testament:'NT'},
+  {name:'3 João', chapters:1, testament:'NT'}, {name:'Judas', chapters:1, testament:'NT'},
+  {name:'Apocalipse', chapters:22, testament:'NT'},
 ];
 
 const SERMON_LABELS = {tematico:'Temático', textual:'Textual', expositivo:'Expositivo'};
@@ -533,7 +573,7 @@ const NAV_ITEMS_MOBILE = [
   {id:'library', label:'Biblioteca', ic:ICONS.library},
   {id:'more', label:'Mais', ic:ICONS.more},
 ];
-const MORE_VIEWS = ['mindmaps','guide','notifications','settings','more'];
+const MORE_VIEWS = ['mindmaps','guide','notifications','settings','more','bible'];
 function renderNav(){
   const side = document.getElementById('sideNav');
   side.innerHTML = NAV_ITEMS_DESKTOP.map(n=>`<button data-nav="${n.id}" class="${currentView===n.id?'active':''}" title="${n.label}" onclick="showView('${n.id}')"><span class="ic">${n.ic}</span><span class="nav-label">${n.label}</span></button>`).join('');
@@ -590,6 +630,7 @@ async function showView(name){
   if(name==='prayers') renderPrayers();
   if(name==='drafts') renderDrafts();
   if(name==='library'){ libraryTab='published'; setLibraryTab('published'); renderLibrary(); updateDraftsWidget(); }
+  if(name==='bible') initBibleReaderView();
 }
 
 /* ================= TOAST ================= */
@@ -901,6 +942,12 @@ function getSchemaNameForField(key){
   const f = cfg.find(x=>x.key===key);
   return (f && f.schema) || 'sermon';
 }
+function textFieldHTML(attrName, attrValue, value, placeholder, isBible){
+  const val = escapeHTML(value||'');
+  const input = `<input type="text" ${attrName}="${attrValue}" value="${val}" placeholder="${placeholder||''}">`;
+  if(!isBible) return input;
+  return `<div class="bible-ref-input">${input}<button type="button" class="bible-ref-btn" onclick="openBiblePicker(this)" title="Escolher referência bíblica">${ICONS.book}</button></div>`;
+}
 function renderFieldHTML(f, values, hydrateList){
   if(f.type==='points'){
     return `<div class="field points-field">
@@ -915,8 +962,7 @@ function renderFieldHTML(f, values, hydrateList){
     if(hydrateList) hydrateList.push({id:editorId, value:values[f.key]||''});
     return `<div class="field"><label>${f.label}</label>${html}${f.hint?`<div class="hint">${f.hint}</div>`:''}</div>`;
   }
-  const val = escapeHTML(values[f.key]||'');
-  return `<div class="field"><label>${f.label}</label><input type="text" data-key="${f.key}" value="${val}" placeholder="${f.placeholder||''}">${f.hint?`<div class="hint">${f.hint}</div>`:''}</div>`;
+  return `<div class="field"><label>${f.label}</label>${textFieldHTML('data-key', f.key, values[f.key], f.placeholder, f.bible)}${f.hint?`<div class="hint">${f.hint}</div>`:''}</div>`;
 }
 function renderDynamicFields(type, subtype, values){
   const cfg = getFieldsConfig(type, subtype);
@@ -996,8 +1042,7 @@ function renderPointsList(key){
         hydrateList.push({id:editorId, value:p[f.key]||''});
         return `<div class="field"><label>${f.label}</label>${html}</div>`;
       }
-      const val = escapeHTML(p[f.key]||'');
-      return `<div class="field"><label>${f.label}</label><input type="text" data-point-field="${f.key}" value="${val}" placeholder="${f.placeholder||''}"></div>`;
+      return `<div class="field"><label>${f.label}</label>${textFieldHTML('data-point-field', f.key, p[f.key], f.placeholder, f.bible)}</div>`;
     }).join('');
     return `<div class="point-card" data-point-id="${p.id}">
       <div class="point-card-head">
@@ -1797,6 +1842,169 @@ function deleteCurrentMap(){
     showView('mindmaps');
   });
 }
+/* ================= SELETOR DE REFERÊNCIA BÍBLICA (picker) ================= */
+let biblePickerTargetInput = null;
+let biblePickerSelectedBook = null;
+let biblePickerSelectedChapter = null;
+function openBiblePicker(btn){
+  const wrap = btn.closest('.bible-ref-input');
+  const input = wrap ? wrap.querySelector('input') : null;
+  if(!input) return;
+  biblePickerTargetInput = input;
+  biblePickerSelectedBook = null;
+  biblePickerSelectedChapter = null;
+  document.getElementById('biblePickerSearch').value = '';
+  document.getElementById('biblePickerStep1').style.display = 'block';
+  document.getElementById('biblePickerStep2').style.display = 'none';
+  renderBiblePickerBooks();
+  openSheet('biblePickerOverlay');
+}
+function renderBiblePickerBooks(){
+  const q = (document.getElementById('biblePickerSearch').value||'').trim().toLowerCase();
+  const list = document.getElementById('biblePickerBooksList');
+  const books = q ? BIBLE_BOOKS.filter(b=>b.name.toLowerCase().includes(q)) : BIBLE_BOOKS;
+  list.innerHTML = books.map(b=>`<button type="button" class="bible-book-chip" onclick="selectBiblePickerBook('${b.name.replace(/'/g,"\\'")}')">${b.name}</button>`).join('') || `<div class="hint">Nenhum livro encontrado.</div>`;
+}
+function selectBiblePickerBook(name){
+  biblePickerSelectedBook = BIBLE_BOOKS.find(b=>b.name===name);
+  if(!biblePickerSelectedBook) return;
+  document.getElementById('biblePickerBookName').textContent = biblePickerSelectedBook.name;
+  let html = '';
+  for(let i=1;i<=biblePickerSelectedBook.chapters;i++) html += `<button type="button" class="bible-chapter-btn" onclick="selectBiblePickerChapter(${i})">${i}</button>`;
+  document.getElementById('biblePickerChapters').innerHTML = html;
+  document.getElementById('biblePickerVerse').value = '';
+  document.getElementById('biblePickerStep1').style.display = 'none';
+  document.getElementById('biblePickerStep2').style.display = 'block';
+}
+function selectBiblePickerChapter(n){
+  biblePickerSelectedChapter = n;
+  document.querySelectorAll('#biblePickerChapters .bible-chapter-btn').forEach(b=>b.classList.toggle('selected', +b.textContent===n));
+}
+function biblePickerBackToBooks(){
+  document.getElementById('biblePickerStep1').style.display = 'block';
+  document.getElementById('biblePickerStep2').style.display = 'none';
+}
+function confirmBiblePicker(){
+  if(!biblePickerSelectedBook || !biblePickerSelectedChapter){ toast('Escolha o livro e o capítulo'); return; }
+  const verse = document.getElementById('biblePickerVerse').value.trim();
+  let ref = `${biblePickerSelectedBook.name} ${biblePickerSelectedChapter}`;
+  if(verse) ref += `:${verse}`;
+  if(biblePickerTargetInput){
+    biblePickerTargetInput.value = ref;
+    biblePickerTargetInput.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  closeSheet('biblePickerOverlay');
+  toast('Referência inserida');
+}
+
+/* ================= LEITOR DA BÍBLIA (busca o texto ao vivo numa API gratuita) ================= */
+const BIBLE_API = 'https://www.abibliadigital.com.br/api';
+let bibleApiBooks = null; // {abbrev:{pt}, name, chapters, testament} — vem da API, cacheado
+let bibleReaderBook = null;
+let bibleReaderChapter = 1;
+const bibleChapterCache = {};
+
+async function loadBibleApiBooks(){
+  if(bibleApiBooks) return bibleApiBooks;
+  try{
+    const cached = localStorage.getItem('kerygma_bible_books_v1');
+    if(cached){ bibleApiBooks = JSON.parse(cached); return bibleApiBooks; }
+  }catch(e){}
+  try{
+    const res = await fetch(BIBLE_API+'/books');
+    if(!res.ok) throw new Error('falha ao buscar livros');
+    const data = await res.json();
+    bibleApiBooks = data;
+    localStorage.setItem('kerygma_bible_books_v1', JSON.stringify(data));
+    return data;
+  }catch(e){
+    console.error(e);
+    return null;
+  }
+}
+async function initBibleReaderView(){
+  document.getElementById('bible-step-books').style.display = 'block';
+  document.getElementById('bible-step-chapters').style.display = 'none';
+  document.getElementById('bible-step-reading').style.display = 'none';
+  document.getElementById('bibleReaderVersion').style.display = 'none';
+  document.getElementById('bibleReaderTitle').textContent = 'Bíblia';
+  const list = document.getElementById('bibleReaderBooksList');
+  list.innerHTML = `<div class="bible-loading">Carregando livros...</div>`;
+  const books = await loadBibleApiBooks();
+  if(!books){
+    list.innerHTML = emptyState(ICONS.search,'Não foi possível carregar','Verifique sua conexão com a internet e tente novamente.');
+    return;
+  }
+  renderBibleReaderBooks();
+}
+function bibleReaderBack(){
+  if(document.getElementById('bible-step-reading').style.display!=='none'){ bibleReaderBackToChapters(); return; }
+  if(document.getElementById('bible-step-chapters').style.display!=='none'){ bibleReaderBackToBooks(); return; }
+  showView('more');
+}
+function renderBibleReaderBooks(){
+  const q = (document.getElementById('bibleReaderSearch').value||'').trim().toLowerCase();
+  const list = document.getElementById('bibleReaderBooksList');
+  if(!bibleApiBooks){ return; }
+  const books = q ? bibleApiBooks.filter(b=>b.name.toLowerCase().includes(q)) : bibleApiBooks;
+  list.innerHTML = books.map(b=>`<button type="button" class="bible-book-chip" onclick='selectBibleReaderBook(${JSON.stringify(b.abbrev.pt)})'>${escapeHTML(b.name)}</button>`).join('') || `<div class="hint">Nenhum livro encontrado.</div>`;
+}
+function selectBibleReaderBook(abbrev){
+  bibleReaderBook = bibleApiBooks.find(b=>b.abbrev.pt===abbrev);
+  if(!bibleReaderBook) return;
+  let html = '';
+  for(let i=1;i<=bibleReaderBook.chapters;i++) html += `<button type="button" class="bible-chapter-btn" onclick="selectBibleReaderChapter(${i})">${i}</button>`;
+  document.getElementById('bibleReaderChaptersList').innerHTML = html;
+  document.getElementById('bible-step-books').style.display = 'none';
+  document.getElementById('bible-step-chapters').style.display = 'block';
+  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name;
+}
+function bibleReaderBackToBooks(){
+  document.getElementById('bible-step-books').style.display = 'block';
+  document.getElementById('bible-step-chapters').style.display = 'none';
+  document.getElementById('bibleReaderVersion').style.display = 'none';
+  document.getElementById('bibleReaderTitle').textContent = 'Bíblia';
+}
+function bibleReaderBackToChapters(){
+  document.getElementById('bible-step-chapters').style.display = 'block';
+  document.getElementById('bible-step-reading').style.display = 'none';
+  document.getElementById('bibleReaderVersion').style.display = 'none';
+  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name;
+}
+function selectBibleReaderChapter(n){
+  bibleReaderChapter = n;
+  document.getElementById('bible-step-chapters').style.display = 'none';
+  document.getElementById('bible-step-reading').style.display = 'block';
+  document.getElementById('bibleReaderVersion').style.display = '';
+  loadBibleChapter();
+}
+async function loadBibleChapter(){
+  const version = document.getElementById('bibleReaderVersion').value;
+  const abbrev = bibleReaderBook.abbrev.pt;
+  const key = version+'/'+abbrev+'/'+bibleReaderChapter;
+  document.getElementById('bibleReaderTitle').textContent = bibleReaderBook.name+' '+bibleReaderChapter;
+  document.getElementById('bibleReaderPrevBtn').disabled = bibleReaderChapter<=1;
+  document.getElementById('bibleReaderNextBtn').disabled = bibleReaderChapter>=bibleReaderBook.chapters;
+  const versesEl = document.getElementById('bibleReaderVerses');
+  if(bibleChapterCache[key]){ renderBibleVerses(bibleChapterCache[key]); return; }
+  versesEl.innerHTML = `<div class="bible-loading">Carregando...</div>`;
+  try{
+    const res = await fetch(`${BIBLE_API}/verses/${version}/${abbrev}/${bibleReaderChapter}`);
+    if(!res.ok) throw new Error('falha ao buscar capítulo');
+    const data = await res.json();
+    bibleChapterCache[key] = data;
+    renderBibleVerses(data);
+  }catch(e){
+    console.error(e);
+    versesEl.innerHTML = emptyState(ICONS.search,'Não foi possível carregar','Verifique sua conexão com a internet e tente novamente.');
+  }
+}
+function renderBibleVerses(data){
+  document.getElementById('bibleReaderVerses').innerHTML = data.verses.map(v=>`<p class="bible-verse"><b>${v.number}</b> ${escapeHTML(v.text)}</p>`).join('');
+}
+function bibleReaderPrevChapter(){ if(bibleReaderChapter>1){ bibleReaderChapter--; loadBibleChapter(); } }
+function bibleReaderNextChapter(){ if(bibleReaderChapter<bibleReaderBook.chapters){ bibleReaderChapter++; loadBibleChapter(); } }
+
 function openRenameMap(){
   const map = getMap();
   if(!map) return;
