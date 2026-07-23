@@ -443,6 +443,18 @@
 
 </div>
 
+<!-- RTE FOCUS MODE (tela cheia de escrita) -->
+<div id="rteFocusOverlay" class="rte-focus-overlay" style="display:none">
+  <div class="rte-focus-header">
+    <div class="rte-focus-title" id="rteFocusTitle">Escrevendo</div>
+    <button type="button" class="btn btn-primary btn-sm" onclick="closeRTEFocus()">Concluído</button>
+  </div>
+  <div class="rte-wrap rte-focus-wrap">
+    <div id="rteFocusToolbarSlot"></div>
+    <div class="rte-editor rte-focus-editor" id="rteFocusEditor" contenteditable="true" data-placeholder="Escreva livremente..."></div>
+  </div>
+</div>
+
 <!-- PRESENTATION MODE -->
 <div id="presentationScreen" class="presentation-screen" style="display:none">
   <button class="pres-close" onclick="closePresentation()">✕</button>
