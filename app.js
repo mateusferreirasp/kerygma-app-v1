@@ -1906,9 +1906,7 @@ async function selectBiblePickerChapter(n){
   }
   biblePickerHasTextMode = true;
   try{
-    const res = await fetch(`${BIBLE_API}/verses/acf/${apiBook.abbrev.pt}/${n}`);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
+    const data = await bibleFetchJSON(`/verses/acf/${apiBook.abbrev.pt}/${n}`);
     versesEl.innerHTML = data.verses.map(v=>`<button type="button" class="bible-picker-verse" data-num="${v.number}" onclick="toggleBiblePickerVerse(${v.number})"><b>${v.number}</b> ${escapeHTML(v.text)}</button>`).join('');
   }catch(e){
     console.error('Erro ao carregar texto para o seletor:', e);
@@ -1958,6 +1956,19 @@ function confirmBiblePicker(){
 
 /* ================= LEITOR DA BÍBLIA (busca o texto ao vivo numa API gratuita) ================= */
 const BIBLE_API = 'https://www.abibliadigital.com.br/api';
+async function bibleFetchJSON(path){
+  const url = BIBLE_API + path;
+  try{
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(directErr){
+    console.warn('Chamada direta à API da Bíblia falhou, tentando via proxy:', directErr && directErr.message);
+    const res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+    if(!res2.ok) throw new Error('HTTP '+res2.status+' (via proxy)');
+    return await res2.json();
+  }
+}
 let bibleApiBooks = null; // {abbrev:{pt}, name, chapters, testament} — vem da API, cacheado
 let bibleReaderBook = null;
 let bibleReaderChapter = 1;
@@ -1970,9 +1981,7 @@ async function loadBibleApiBooks(){
     if(cached){ bibleApiBooks = JSON.parse(cached); return bibleApiBooks; }
   }catch(e){}
   try{
-    const res = await fetch(BIBLE_API+'/books');
-    if(!res.ok) throw new Error('falha ao buscar livros');
-    const data = await res.json();
+    const data = await bibleFetchJSON('/books');
     bibleApiBooks = data;
     localStorage.setItem('kerygma_bible_books_v1', JSON.stringify(data));
     return data;
@@ -2037,9 +2046,7 @@ async function loadBibleChapter(){
   if(bibleChapterCache[key]){ renderBibleVerses(bibleChapterCache[key]); return; }
   versesEl.innerHTML = `<div class="bible-loading">Carregando...</div>`;
   try{
-    const res = await fetch(`${BIBLE_API}/verses/${version}/${abbrev}/${bibleReaderChapter}`);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
+    const data = await bibleFetchJSON(`/verses/${version}/${abbrev}/${bibleReaderChapter}`);
     bibleChapterCache[key] = data;
     renderBibleVerses(data);
   }catch(e){
