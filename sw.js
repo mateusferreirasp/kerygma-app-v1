@@ -4,9 +4,10 @@
 // usa a cópia salva localmente se estiver sem internet.
 //
 // IMPORTANTE: sempre que os arquivos do app forem atualizados, mude o
-// número da CACHE_VERSION abaixo — isso força todo mundo a receber a
-// versão nova automaticamente, sem precisar limpar dados manualmente.
-const CACHE_VERSION = 'v2';
+// número da CACHE_VERSION abaixo — isso faz o navegador perceber que
+// existe uma versão nova e avisar o usuário (em vez de continuar usando
+// a versão antiga guardada localmente).
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = 'kerygma-shell-' + CACHE_VERSION;
 const SHELL_FILES = ['./index.html', './style.css', './app.js', './manifest.json'];
 
@@ -14,7 +15,15 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_FILES)).catch(() => {})
   );
-  self.skipWaiting();
+  // não chama skipWaiting() aqui de propósito: a nova versão fica “esperando”
+  // até o usuário confirmar (via banner “Atualizar agora” no app), evitando
+  // recarregar a página no meio de uma digitação sem avisar.
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
