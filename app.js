@@ -2064,8 +2064,45 @@ function maybeAutoShowInstallPrompt(){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      // checa se já existe uma versão nova esperando (ex: acabou de atualizar antes de recarregar)
+      if(reg.waiting) showUpdateBanner(reg);
+      // detecta quando uma nova versão termina de baixar
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state==='installed' && navigator.serviceWorker.controller){
+            showUpdateBanner(reg);
+          }
+        });
+      });
+      // procura por atualização sempre que o usuário volta pro app (ex: reabre pelo ícone)
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState==='visible') reg.update().catch(()=>{});
+      });
+      setInterval(()=>reg.update().catch(()=>{}), 60*60*1000); // também checa a cada 1h se ficar aberto
+    }).catch(()=>{});
   });
+  // quando a nova versão assume o controle, recarrega a página automaticamente
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+function showUpdateBanner(reg){
+  if(document.getElementById('updateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner';
+  banner.innerHTML = `<span>Uma nova versão do Kerygma está disponível</span><button type="button">Atualizar agora</button>`;
+  banner.querySelector('button').onclick = ()=>{
+    if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    banner.remove();
+  };
+  document.body.appendChild(banner);
 }
 
 /* ================= PEDIDOS DE ORAÇÃO ================= */
