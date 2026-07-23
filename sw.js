@@ -7,7 +7,7 @@
 // número da CACHE_VERSION abaixo — isso faz o navegador perceber que
 // existe uma versão nova e avisar o usuário (em vez de continuar usando
 // a versão antiga guardada localmente).
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = 'kerygma-shell-' + CACHE_VERSION;
 const SHELL_FILES = ['./index.html', './style.css', './app.js', './manifest.json'];
 
