@@ -152,7 +152,8 @@ button{font-family:inherit;}
 .hero-verse{font-family:'Fraunces',serif;font-size:19px;line-height:1.45;font-weight:500;max-width:36ch;}
 .hero-ref{margin-top:10px;font-size:12.5px;color:var(--blue-100);opacity:.85;}
 
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+@media (min-width:520px){ .stats-row{grid-template-columns:repeat(6,1fr);} }
 .stat-card{background:white;border-radius:var(--radius-md);padding:14px 8px;text-align:center;box-shadow:var(--shadow-sm);}
 .stat-num{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--blue-700);}
 .stat-lbl{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-top:2px;}
@@ -192,6 +193,7 @@ button{font-family:inherit;}
 .item-card.study .i-ic{background:#E9F7F0;color:#1B8A5A;}
 .item-card.devotional .i-ic{background:#FFF0E0;color:#C2680C;}
 .item-card.summary .i-ic{background:#DFF7F5;color:#0E7C86;}
+.item-card.notes .i-ic{background:#FFF6D6;color:#9C7A0A;}
 .item-card .i-body{min-width:0;flex:1;}
 .item-card .i-title{font-weight:700;font-size:14.5px;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .item-card .i-meta{font-size:12px;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center;}
@@ -202,6 +204,7 @@ button{font-family:inherit;}
 .tag.study{background:#DFF5E9;color:#1B8A5A;}
 .tag.devotional{background:#FFF0E0;color:#C2680C;}
 .tag.summary{background:#DFF7F5;color:#0E7C86;}
+.tag.notes{background:#FFF6D6;color:#9C7A0A;}
 .tag.folder-tag{background:var(--blue-50);color:var(--blue-700);display:inline-flex;align-items:center;gap:3px;}
 .tag.folder-tag-none{background:#F1F1F1;color:var(--muted);}
 .chev{color:var(--blue-200,#B9CFF0);font-size:15px;}
@@ -751,3 +754,10 @@ button{font-family:inherit;}
 }
 .inline-folder-form input::placeholder{color:var(--muted);}
 .inline-folder-form .btn{padding:8px 12px;font-size:12.5px;white-space:nowrap;}
+
+/* ---------- BADGE DE CONTAGEM EM ABAS (ex: Rascunhos) ---------- */
+.tab-count-badge{
+  display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;
+  background:rgba(0,0,0,.12);border-radius:999px;font-size:10px;font-weight:800;margin-left:3px;
+}
+.form-tab.active .tab-count-badge{background:rgba(255,255,255,.25);}
