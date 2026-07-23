@@ -1960,20 +1960,27 @@ async function bibleFetchJSON(path){
   const url = BIBLE_API + path;
   try{
     const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){ const err = new Error('HTTP '+res.status); err.isServerError = res.status>=500; throw err; }
     return await res.json();
   }catch(directErr){
     console.warn('Chamada direta à API da Bíblia falhou, tentando via proxy:', directErr && directErr.message);
     const res2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-    if(!res2.ok) throw new Error('HTTP '+res2.status+' (via proxy)');
+    if(!res2.ok){ const err = new Error('HTTP '+res2.status+' (via proxy)'); err.isServerError = directErr.isServerError || res2.status>=500; throw err; }
     return await res2.json();
   }
+}
+function bibleErrorMessage(e){
+  if(e && e.isServerError){
+    return {title:'O serviço da Bíblia está indisponível no momento', desc:'O servidor que fornece o texto bíblico está com um problema temporário do lado deles. Tente novamente em alguns minutos.'};
+  }
+  return {title:'Não foi possível carregar', desc:'Verifique sua conexão com a internet e tente novamente.'};
 }
 let bibleApiBooks = null; // {abbrev:{pt}, name, chapters, testament} — vem da API, cacheado
 let bibleReaderBook = null;
 let bibleReaderChapter = 1;
 const bibleChapterCache = {};
 
+let bibleLastError = null;
 async function loadBibleApiBooks(){
   if(bibleApiBooks) return bibleApiBooks;
   try{
@@ -1987,6 +1994,7 @@ async function loadBibleApiBooks(){
     return data;
   }catch(e){
     console.error(e);
+    bibleLastError = e;
     return null;
   }
 }
@@ -1994,7 +2002,8 @@ async function initBibleReaderView(){
   document.getElementById('bibleBookLabel').textContent = 'Carregando...';
   const books = await loadBibleApiBooks();
   if(!books){
-    document.getElementById('bibleReaderVerses').innerHTML = emptyState(ICONS.search,'Não foi possível carregar os livros','Verifique sua conexão com a internet e tente novamente.');
+    const msg = bibleErrorMessage(bibleLastError);
+    document.getElementById('bibleReaderVerses').innerHTML = emptyState(ICONS.search, msg.title, msg.desc);
     return;
   }
   if(!bibleReaderBook) bibleReaderBook = books.find(b=>b.abbrev.pt==='jo') || books[0];
@@ -2051,7 +2060,7 @@ async function loadBibleChapter(){
     renderBibleVerses(data);
   }catch(e){
     console.error('Erro ao carregar capítulo da Bíblia:', e);
-    versesEl.innerHTML = emptyState(ICONS.search,'Não foi possível carregar',`Verifique sua conexão com a internet e tente novamente. (${e.message||'erro desconhecido'})`);
+    versesEl.innerHTML = (()=>{ const msg=bibleErrorMessage(e); return emptyState(ICONS.search, msg.title, msg.desc); })();
   }
 }
 function renderBibleVerses(data){
