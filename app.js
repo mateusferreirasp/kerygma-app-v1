@@ -99,6 +99,7 @@ function rteToolbarHTML(){
     <button type="button" class="rte-btn" onmousedown="event.preventDefault()" onclick="rteExec(this,'insertUnorderedList')" title="Lista com marcadores">${ICONS.list}</button>
     <button type="button" class="rte-btn" onmousedown="event.preventDefault()" onclick="rteInsertOrderedList(this,'decimal')" title="Lista numerada (1, 2, 3...)">${ICONS.listOrdered}</button>
     <button type="button" class="rte-btn rte-alpha-btn" onmousedown="event.preventDefault()" onclick="rteInsertOrderedList(this,'lower-alpha')" title="Lista com letras (a, b, c...)">a</button>
+    <button type="button" class="rte-btn rte-expand-btn" onmousedown="event.preventDefault()" onclick="openRTEFocus(this)" title="Expandir para tela cheia">${ICONS.fullscreen}</button>
   </div>`;
 }
 function rteFieldHTML(attrName, attrValue, placeholder, big){
@@ -114,6 +115,16 @@ function setRTEContent(id, value){
   if(looksLikeHTML(value)) el.innerHTML = sanitizeHTML(value);
   else el.textContent = value || '';
 }
+function autoGrowRTE(el){
+  if(!el || el.classList.contains('rte-focus-editor')) return; // no modo tela cheia, o tamanho é controlado pelo layout, não pelo conteúdo
+  el.style.height = 'auto';
+  const max = window.innerHeight * 0.7;
+  el.style.height = Math.min(el.scrollHeight, max) + 'px';
+  el.style.overflowY = el.scrollHeight > max ? 'auto' : 'hidden';
+}
+document.addEventListener('input', e=>{
+  if(e.target && e.target.classList && e.target.classList.contains('rte-editor')) autoGrowRTE(e.target);
+});
 function hexToRgbString(hex){
   hex = hex.replace('#','');
   const r = parseInt(hex.substring(0,2),16);
@@ -144,6 +155,35 @@ function rteInsertOrderedList(btn, type){
     if(node && node.nodeName==='OL') node.style.listStyleType = type;
   }
 }
+
+/* ---- Modo tela cheia (foco de escrita) ---- */
+let rteFocusSourceEditor = null;
+function openRTEFocus(btn){
+  const editor = btn.closest('.rte-wrap').querySelector('.rte-editor');
+  if(!editor) return;
+  rteFocusSourceEditor = editor;
+  const fieldEl = btn.closest('.field');
+  const labelEl = fieldEl ? fieldEl.querySelector('label') : null;
+  document.getElementById('rteFocusTitle').textContent = labelEl ? labelEl.textContent : 'Escrevendo';
+  const focusEditor = document.getElementById('rteFocusEditor');
+  focusEditor.innerHTML = editor.innerHTML;
+  document.getElementById('rteFocusOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', rteFocusKeyHandler);
+  setTimeout(()=>{ focusEditor.focus(); }, 60);
+}
+function closeRTEFocus(){
+  if(rteFocusSourceEditor){
+    rteFocusSourceEditor.innerHTML = document.getElementById('rteFocusEditor').innerHTML;
+    autoGrowRTE(rteFocusSourceEditor);
+    rteFocusSourceEditor.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+  rteFocusSourceEditor = null;
+  document.getElementById('rteFocusOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', rteFocusKeyHandler);
+}
+function rteFocusKeyHandler(e){ if(e.key==='Escape') closeRTEFocus(); }
 function readRTEValue(el){
   const clean = sanitizeHTML(el.innerHTML);
   return stripHTML(clean).trim() ? clean : '';
@@ -892,7 +932,7 @@ function renderDynamicFields(type, subtype, values){
   }else{
     wrap.innerHTML = cfg.map(f=>renderFieldHTML(f, values, hydrateList)).join('');
   }
-  hydrateList.forEach(h=>setRTEContent(h.id, h.value));
+  hydrateList.forEach(h=>{ setRTEContent(h.id, h.value); autoGrowRTE(document.getElementById(h.id)); });
   cfg.forEach(f=>{ if(f.type==='points') ctx.formPoints[f.key] = normalizePoints(values[f.key], f.schema); });
   cfg.forEach(f=>{ if(f.type==='points') renderPointsList(f.key); });
 }
@@ -968,7 +1008,7 @@ function renderPointsList(key){
       <button type="button" class="btn btn-primary btn-sm btn-block point-save-btn" onclick="togglePointExpand('${key}','${p.id}',false)">${ICONS.check} Salvar ponto</button>
     </div>`;
   }).join('');
-  hydrateList.forEach(h=>setRTEContent(h.id, h.value));
+  hydrateList.forEach(h=>{ setRTEContent(h.id, h.value); autoGrowRTE(document.getElementById(h.id)); });
 }
 function syncPointsFromDOM(key){
   const list = document.getElementById('points-list-'+key);
@@ -1266,7 +1306,10 @@ function updateDraftsWidget(){
     }
   }
   const tabCount = document.getElementById('draftsTabCount');
-  if(tabCount) tabCount.textContent = drafts.length ? drafts.length : '';
+  if(tabCount){
+    tabCount.textContent = drafts.length || '';
+    tabCount.classList.toggle('show', drafts.length>0);
+  }
 }
 
 /* ================= ITEM DETAIL ================= */
@@ -2087,4 +2130,6 @@ function renderPrayers(){
 }
 
 /* ================= INIT ================= */
+const rteFocusToolbarSlot = document.getElementById('rteFocusToolbarSlot');
+if(rteFocusToolbarSlot) rteFocusToolbarSlot.innerHTML = rteToolbarHTML();
 initAuth();
