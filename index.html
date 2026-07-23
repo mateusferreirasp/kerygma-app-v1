@@ -370,9 +370,29 @@
     <!-- BIBLE READER -->
     <section class="view" id="view-bible">
       <div class="back-row">
-        <button class="icon-btn" onclick="bibleReaderBack()">←</button>
-        <div class="back-title" id="bibleReaderTitle">Bíblia</div>
-        <select id="bibleReaderVersion" class="bible-version-select" onchange="loadBibleChapter()" style="margin-left:auto;display:none">
+        <button class="icon-btn" onclick="showView('more')">←</button>
+        <div class="back-title">Bíblia</div>
+      </div>
+
+      <div class="bible-controls">
+        <div class="custom-select bible-book-select" id="bibleBookSelect">
+          <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('bibleBookSelect')">
+            <span id="bibleBookLabel">Carregando...</span>
+            <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="custom-select-panel bible-select-panel" id="bibleBookPanel">
+            <input type="text" class="bible-select-search" id="bibleBookSearchInput" placeholder="Buscar livro..." oninput="renderBibleBookOptions()" onclick="event.stopPropagation()">
+            <div id="bibleBookOptions"></div>
+          </div>
+        </div>
+        <div class="custom-select bible-chapter-select" id="bibleChapterSelect">
+          <button type="button" class="custom-select-trigger" onclick="toggleCustomSelect('bibleChapterSelect')">
+            <span id="bibleChapterLabel">1</span>
+            <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="custom-select-panel bible-select-panel bible-chapter-panel" id="bibleChapterOptions"></div>
+        </div>
+        <select id="bibleReaderVersion" class="bible-version-select" onchange="loadBibleChapter()">
           <option value="acf">ACF</option>
           <option value="ra">RA</option>
           <option value="nvi">NVI</option>
@@ -380,26 +400,12 @@
         </select>
       </div>
 
-      <div id="bible-step-books">
-        <div class="search-bar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
-          <input type="text" id="bibleReaderSearch" placeholder="Buscar livro..." oninput="renderBibleReaderBooks()">
-        </div>
-        <div class="bible-book-grid" id="bibleReaderBooksList"></div>
+      <div class="bible-nav-buttons">
+        <button class="btn btn-secondary btn-sm" id="bibleReaderPrevBtn" onclick="bibleReaderPrevChapter()">‹ Anterior</button>
+        <button class="btn btn-secondary btn-sm" id="bibleReaderNextBtn" onclick="bibleReaderNextChapter()">Próximo ›</button>
       </div>
 
-      <div id="bible-step-chapters" style="display:none">
-        <div class="hint" style="margin-bottom:8px;">Escolha o capítulo</div>
-        <div class="bible-chapter-grid" id="bibleReaderChaptersList"></div>
-      </div>
-
-      <div id="bible-step-reading" style="display:none">
-        <div id="bibleReaderVerses" class="bible-verses"></div>
-        <div class="bible-nav-buttons">
-          <button class="btn btn-secondary" id="bibleReaderPrevBtn" onclick="bibleReaderPrevChapter()">‹ Anterior</button>
-          <button class="btn btn-secondary" id="bibleReaderNextBtn" onclick="bibleReaderNextChapter()">Próximo ›</button>
-        </div>
-      </div>
+      <div id="bibleReaderVerses" class="bible-verses"></div>
     </section>
 
     <!-- DRAFTS -->
@@ -624,11 +630,19 @@
       </div>
       <div class="hint" style="margin-bottom:8px;">Capítulo</div>
       <div class="bible-chapter-grid" id="biblePickerChapters"></div>
-      <div class="field" style="margin-top:16px;">
-        <label>Versículo(s) — opcional</label>
-        <input type="text" id="biblePickerVerse" placeholder="Ex: 16 ou 1-5">
+    </div>
+    <div id="biblePickerStep3" style="display:none">
+      <div class="back-row" style="margin-bottom:10px;">
+        <button type="button" class="icon-btn" onclick="biblePickerBackToChapters()">←</button>
+        <div class="back-title" id="biblePickerChapterTitle" style="font-size:16.5px;">Capítulo</div>
       </div>
-      <button type="button" class="btn btn-primary btn-block" onclick="confirmBiblePicker()">Inserir referência</button>
+      <p class="hint" style="margin-bottom:10px;">Toque nos versículos que quiser incluir na referência (opcional)</p>
+      <div id="biblePickerVersesList" class="bible-picker-verses"></div>
+      <div class="field" id="biblePickerManualVerse" style="display:none;margin-top:4px;">
+        <label>Versículo(s) — opcional</label>
+        <input type="text" id="biblePickerManualVerseInput" placeholder="Ex: 16 ou 1-5">
+      </div>
+      <button type="button" class="btn btn-primary btn-block" style="margin-top:14px;" onclick="confirmBiblePicker()">Inserir referência</button>
     </div>
   </div>
 </div>
